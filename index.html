@@ -3,57 +3,87 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
-<meta name="theme-color" content="#1a1240">
+<meta name="theme-color" content="#100e0b">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="ארץ עיר: משחק המילים הקלאסי בעברית. מול המחשב, עם חברים על מכשיר אחד, או אונליין.">
 <title>ארץ עיר</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&family=Secular+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Bellefair&family=Frank+Ruhl+Libre:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="bg" aria-hidden="true"></div>
 
+<!-- shared icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="i-go" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3"/></symbol>
+    <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3 19.5c.9-3.3 3.2-5 6-5s5.1 1.7 6 5"/><circle cx="16.5" cy="9" r="2.6"/><path d="M16.2 14.3c2.3.1 4 1.6 4.8 4.4"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5M12 3.5C9.4 5.9 8.2 8.7 8.2 12s1.2 6.1 3.8 8.5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6.5c-2-1.5-4.8-2-8-1.5v13c3.2-.5 6 0 8 1.5 2-1.5 4.8-2 8-1.5V5c-3.2-.5-6 0-8 1.5zM12 6.5v13"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3.5M7.5 8L12 3.5 16.5 8M5 12.5v7h14v-7"/></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M3.5 7h3.8c4.2 0 5.2 10 9.4 10h3.8M3.5 17h3.8c1.6 0 2.7-1.4 3.6-3.2M14 10.2c.8-1.8 1.9-3.2 3.5-3.2h3M18 4l2.5 3-2.5 3M18 14l2.5 3-2.5 3"/></symbol>
+    <symbol id="i-door" viewBox="0 0 24 24"><path d="M5 20.5h14M7 20.5v-16h10v16"/><circle cx="14" cy="12.5" r=".6"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-6.5 8 6.5M6.5 9v11h11V9"/></symbol>
+    <symbol id="i-again" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4v4.5H15"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><path d="M8.5 3.5h7l5 5v7l-5 5h-7l-5-5v-7z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  </defs>
+</svg>
+
 <main id="app">
 
   <!-- ============ HOME ============ -->
   <section class="screen active" id="s-home">
-    <div class="scroll center-col home">
-      <button class="profile-chip" id="profileChip" aria-label="הפרופיל שלי">
-        <span class="pc-av" id="pcAv">🦊</span>
-        <span class="pc-txt"><b id="pcName">אורח</b><small>הפרופיל שלי ›</small></span>
-      </button>
-      <div class="logo" aria-hidden="true">
-        <span class="tile t1">א</span><span class="tile t2">ר</span><span class="tile t3">ץ</span>
-      </div>
-      <h1 class="title">ארץ <span>עיר</span></h1>
-      <p class="subtitle">משחק המילים הקלאסי — עם חברים או מול המחשב</p>
-      <div class="menu">
-        <button class="btn btn-menu btn-yellow" data-act="solo">
-          <span class="ic">🤖</span><span class="txt"><b>מול המחשב</b><small>אתגרו בוטים בשלוש רמות קושי</small></span>
+    <div class="scroll home">
+      <header class="home-top">
+        <button class="profile-chip" id="profileChip" aria-label="הפרופיל שלי">
+          <span id="pcAv"></span>
+          <span class="pc-txt"><b id="pcName">אורח</b><small>הפרופיל שלי</small></span>
         </button>
-        <button class="btn btn-menu btn-pink" data-act="local">
-          <span class="ic">🎉</span><span class="txt"><b>כמה שחקנים</b><small>על מכשיר אחד, כל אחד בתורו</small></span>
-        </button>
-        <button class="btn btn-menu btn-teal" data-act="online">
-          <span class="ic">🌐</span><span class="txt"><b>אונליין עם חברים</b><small>כל אחד מהמכשיר שלו, עם קוד חדר</small></span>
-        </button>
+        <button class="icon-btn" id="soundBtn" aria-label="צליל"></button>
+      </header>
+
+      <div class="hero">
+        <div class="seal" aria-hidden="true"><span>א</span></div>
+        <p class="eyebrow">משחק המילים הקלאסי</p>
+        <h1 class="title">ארץ <em>עיר</em></h1>
+        <div class="rule" aria-hidden="true"><i></i></div>
       </div>
-      <div class="home-foot">
-        <button class="btn btn-ghost" data-act="rules">📖 איך משחקים</button>
-        <button class="btn btn-ghost" id="soundBtn" aria-label="צליל">🔊</button>
-      </div>
+
+      <nav class="menu" aria-label="מצבי משחק">
+        <button class="menu-row" data-act="solo">
+          <span class="mr-ic"><svg><use href="#i-cpu"/></svg></span>
+          <span class="mr-txt"><b>מול המחשב</b><small>שלוש רמות קושי</small></span>
+          <svg class="mr-go"><use href="#i-go"/></svg>
+        </button>
+        <button class="menu-row" data-act="local">
+          <span class="mr-ic"><svg><use href="#i-people"/></svg></span>
+          <span class="mr-txt"><b>כמה שחקנים</b><small>על מכשיר אחד, כל אחד בתורו</small></span>
+          <svg class="mr-go"><use href="#i-go"/></svg>
+        </button>
+        <button class="menu-row" data-act="online">
+          <span class="mr-ic"><svg><use href="#i-globe"/></svg></span>
+          <span class="mr-txt"><b>אונליין</b><small>עם חברים או עם שחקנים אקראיים</small></span>
+          <svg class="mr-go"><use href="#i-go"/></svg>
+        </button>
+      </nav>
+
+      <button class="link-btn" data-act="rules"><svg><use href="#i-book"/></svg>איך משחקים</button>
     </div>
   </section>
 
   <!-- ============ SETUP ============ -->
   <section class="screen" id="s-setup">
     <header class="topbar">
-      <button class="icon-btn" data-act="back" aria-label="חזרה">➜</button>
+      <button class="icon-btn" data-act="back" aria-label="חזרה"><svg><use href="#i-back"/></svg></button>
       <h2 id="setupTitle">הגדרות משחק</h2>
       <span></span>
     </header>
@@ -61,16 +91,16 @@
       <div class="card room-card hidden" id="roomCard">
         <div class="room-label">קוד החדר</div>
         <div class="room-code" id="roomCode">----</div>
-        <button class="btn btn-small btn-teal" id="shareRoom">📤 שתפו את הקוד</button>
-        <p class="hint">החברים בוחרים "אונליין" ← "הצטרפות" ומקלידים את הקוד</p>
+        <button class="btn btn-outline btn-small" id="shareRoom"><svg><use href="#i-share"/></svg>שתפו את הקוד</button>
+        <p class="hint">החברים בוחרים "אונליין", ואז "הצטרפות לחדר", ומקלידים את הקוד</p>
       </div>
 
       <div class="card">
         <div class="card-h">
           <h3>שחקנים</h3>
           <div class="row-btns">
-            <button class="btn btn-small btn-pink" id="addHuman">+ שחקן</button>
-            <button class="btn btn-small btn-yellow" id="addBot">+ מחשב</button>
+            <button class="btn btn-outline btn-small" id="addHuman">+ שחקן</button>
+            <button class="btn btn-outline btn-small" id="addBot">+ מחשב</button>
           </div>
         </div>
         <div id="playersList" class="players-list"></div>
@@ -83,46 +113,44 @@
 
       <div class="card">
         <h3>חוקי המשחק</h3>
-        <div class="opt" id="optStyle"><label>סגנון משחק<small id="styleNote"></small></label><div class="seg" data-key="style" data-vals="classic,lists" data-labels="קלאסי,📝 רשימות"></div></div>
+        <div class="opt" id="optStyle"><label>סגנון משחק<small id="styleNote"></small></label><div class="seg" data-key="style" data-vals="classic,lists" data-labels="קלאסי,רשימות"></div></div>
         <div class="opt"><label>מספר סיבובים (אותיות)</label><div class="seg" data-key="rounds" data-vals="3,5,7,10"></div></div>
         <div class="opt" id="optTimer"><label>זמן לכל סיבוב</label><div class="seg" data-key="timer" data-vals="45,60,90,120,0" data-labels="45 ש׳,60 ש׳,90 ש׳,2 דק׳,∞" data-custom="1"></div></div>
         <div class="opt" id="optListTime"><label>זמן לכל קטגוריה</label><div class="seg" data-key="listTime" data-vals="30,45,60,90" data-labels="30 ש׳,45 ש׳,60 ש׳,90 ש׳" data-custom="1"></div></div>
-        <div class="opt" id="optStop"><label>✋ "עצור!" — מי שמסיים ראשון עוצר לכולם<small id="stopNote"></small></label><button class="switch" data-key="stopRule" aria-label="עצור"></button></div>
+        <div class="opt" id="optStop"><label>"עצור": מי שמסיים ראשון עוצר לכולם<small id="stopNote"></small></label><button class="switch" data-key="stopRule" aria-label="עצור"></button></div>
         <div class="opt"><label>כולל אותיות קשות (ה, ו, ז)</label><button class="switch" data-key="hardLetters" aria-label="אותיות קשות"></button></div>
       </div>
     </div>
     <footer class="bottombar">
-      <button class="btn btn-big btn-yellow btn-full" id="startGame">יאללה, מתחילים! 🚀</button>
+      <button class="btn btn-gold btn-big btn-full" id="startGame">התחלת משחק</button>
     </footer>
   </section>
 
   <!-- ============ ONLINE ============ -->
   <section class="screen" id="s-online">
     <header class="topbar">
-      <button class="icon-btn" data-act="back" aria-label="חזרה">➜</button>
-      <h2>משחק אונליין</h2>
+      <button class="icon-btn" data-act="back" aria-label="חזרה"><svg><use href="#i-back"/></svg></button>
+      <h2>אונליין</h2>
       <span></span>
     </header>
     <div class="scroll">
-      <div class="card quick-card">
-        <h3>🎲 משחק מהיר</h3>
-        <p class="hint">משחק עם שחקנים אקראיים שמחפשים משחק עכשיו. בלי קודים, פשוט נכנסים.</p>
-        <button class="btn btn-big btn-yellow btn-full" id="quickBtn">מצאו לי משחק!</button>
-      </div>
       <div class="card">
-        <h3>מי משחק?</h3>
+        <h3>מי משחק</h3>
         <input id="onName" class="inp" maxlength="14" placeholder="השם שלך" autocomplete="off">
         <div class="avatar-pick" id="onAvatar"></div>
       </div>
-      <div class="card">
-        <h3>🏠 פתיחת חדר חדש</h3>
-        <p class="hint">אתם המארחים: קובעים את ההגדרות ומזמינים חברים</p>
-        <button class="btn btn-big btn-teal btn-full" id="createRoom">צור חדר</button>
+      <div class="card feature">
+        <div class="feat-h"><span class="feat-ic"><svg><use href="#i-shuffle"/></svg></span><div><h3>משחק מהיר</h3><p class="hint">משחק עם שחקנים אקראיים שמחפשים משחק עכשיו</p></div></div>
+        <button class="btn btn-gold btn-big btn-full" id="quickBtn">מצאו לי משחק</button>
       </div>
       <div class="card">
-        <h3>🚪 הצטרפות לחדר</h3>
-        <input id="joinCode" class="inp code-inp" inputmode="numeric" maxlength="4" placeholder="קוד בן 4 ספרות" autocomplete="off">
-        <button class="btn btn-big btn-pink btn-full" id="joinRoom">הצטרף</button>
+        <div class="feat-h"><span class="feat-ic"><svg><use href="#i-home"/></svg></span><div><h3>פתיחת חדר חדש</h3><p class="hint">אתם המארחים: קובעים את ההגדרות ומזמינים חברים</p></div></div>
+        <button class="btn btn-outline btn-big btn-full" id="createRoom">צור חדר</button>
+      </div>
+      <div class="card">
+        <div class="feat-h"><span class="feat-ic"><svg><use href="#i-door"/></svg></span><div><h3>הצטרפות לחדר</h3><p class="hint">הקלידו את הקוד שקיבלתם מהמארח</p></div></div>
+        <input id="joinCode" class="inp code-inp" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off">
+        <button class="btn btn-outline btn-big btn-full" id="joinRoom">הצטרף</button>
       </div>
       <p class="hint center">צריך חיבור לאינטרנט. השחקנים מתחברים ישירות זה לזה.</p>
     </div>
@@ -131,7 +159,7 @@
   <!-- ============ WAIT (client lobby) ============ -->
   <section class="screen" id="s-wait">
     <header class="topbar">
-      <button class="icon-btn" data-act="back" aria-label="יציאה">➜</button>
+      <button class="icon-btn" data-act="back" aria-label="יציאה"><svg><use href="#i-back"/></svg></button>
       <h2>חדר משחק</h2>
       <span></span>
     </header>
@@ -149,18 +177,18 @@
   <!-- ============ QUICK MATCH ============ -->
   <section class="screen" id="s-quick">
     <header class="topbar">
-      <button class="icon-btn" data-act="back" aria-label="ביטול">➜</button>
+      <button class="icon-btn" data-act="back" aria-label="ביטול"><svg><use href="#i-back"/></svg></button>
       <h2>משחק מהיר</h2>
       <span></span>
     </header>
     <div class="scroll center-col">
-      <div class="radar" aria-hidden="true"><span></span><span></span><span></span><div class="radar-core">🎲</div></div>
+      <div class="radar" aria-hidden="true"><span></span><span></span><span></span><div class="radar-core"><svg><use href="#i-shuffle"/></svg></div></div>
       <h2 class="quick-title" id="quickTitle">מחפשים משחק...</h2>
       <p class="hint" id="quickHint"></p>
       <div class="card wide hidden" id="quickRoom"><h3>בחדר</h3><div id="quickPlayers" class="players-list"></div></div>
       <div class="final-btns">
-        <button class="btn btn-big btn-yellow hidden" id="quickStart">▶ התחילו עכשיו</button>
-        <button class="btn btn-big btn-ghost hidden" id="quickBot">🤖 שחקו נגד המחשב בינתיים</button>
+        <button class="btn btn-gold btn-big hidden" id="quickStart">התחילו עכשיו</button>
+        <button class="btn btn-outline btn-big hidden" id="quickBot">שחקו נגד המחשב בינתיים</button>
       </div>
     </div>
   </section>
@@ -168,27 +196,28 @@
   <!-- ============ PROFILE ============ -->
   <section class="screen" id="s-profile">
     <header class="topbar">
-      <button class="icon-btn" data-act="back" aria-label="חזרה">➜</button>
+      <button class="icon-btn" data-act="back" aria-label="חזרה"><svg><use href="#i-back"/></svg></button>
       <h2>הפרופיל שלי</h2>
       <span></span>
     </header>
     <div class="scroll">
-      <div class="card center">
-        <div class="pass-av prof-av" id="profAv">🦊</div>
+      <div class="card center profile-card">
+        <div id="profAv" class="prof-av"></div>
         <input id="profName" class="inp prof-name" maxlength="14" placeholder="השם שלך" autocomplete="off">
+        <p class="hint">גוון</p>
         <div class="avatar-pick" id="profAvatars"></div>
       </div>
       <div class="card">
-        <h3>📊 הסטטיסטיקות שלי</h3>
+        <h3>סטטיסטיקות</h3>
         <div class="stats" id="profStats"></div>
         <p class="hint">נספרים משחקים מול המחשב ואונליין.</p>
       </div>
       <div class="card">
-        <h3>⚙️ העדפות</h3>
-        <div class="opt"><label>🔊 צלילים</label><button class="switch" id="profSound" aria-label="צלילים"></button></div>
-        <div class="opt"><label>📳 רטט</label><button class="switch" id="profVib" aria-label="רטט"></button></div>
-        <p class="hint">השם, הדמות, ההגדרות, הקטגוריות שהוספתם והסטטיסטיקות נשמרים אוטומטית במכשיר הזה.</p>
-        <button class="btn btn-small btn-ghost" id="profReset">איפוס סטטיסטיקות</button>
+        <h3>העדפות</h3>
+        <div class="opt"><label>צלילים</label><button class="switch" id="profSound" aria-label="צלילים"></button></div>
+        <div class="opt"><label>רטט</label><button class="switch" id="profVib" aria-label="רטט"></button></div>
+        <p class="hint">השם, הגוון, ההגדרות, הקטגוריות שהוספתם והסטטיסטיקות נשמרים אוטומטית במכשיר הזה.</p>
+        <button class="btn btn-outline btn-small" id="profReset">איפוס סטטיסטיקות</button>
       </div>
     </div>
   </section>
@@ -196,19 +225,20 @@
   <!-- ============ PASS DEVICE ============ -->
   <section class="screen" id="s-pass">
     <div class="center-col full">
-      <div class="pass-av" id="passAv"></div>
+      <div id="passAv"></div>
+      <p class="eyebrow">התור של</p>
       <h2 class="pass-name" id="passName"></h2>
-      <p class="pass-txt">התור שלך! קחו את המכשיר — ואחרים, בלי להציץ 👀</p>
-      <div class="tile mid" id="passLetter"></div>
-      <button class="btn btn-big btn-yellow" id="passReady">אני מוכן/ה — יאללה!</button>
+      <p class="pass-txt">קחו את המכשיר. כל השאר, בלי להציץ.</p>
+      <div class="letter-seal mid" id="passLetter"></div>
+      <button class="btn btn-gold btn-big" id="passReady">אני מוכן/ה</button>
     </div>
   </section>
 
   <!-- ============ SPIN ============ -->
   <section class="screen" id="s-spin">
     <div class="center-col full">
-      <div class="round-pill" id="spinRound"></div>
-      <div class="tile huge" id="spinTile">?</div>
+      <p class="eyebrow" id="spinRound"></p>
+      <div class="letter-seal huge" id="spinTile">?</div>
       <p class="spin-hint" id="spinHint">מגרילים אות...</p>
     </div>
   </section>
@@ -216,7 +246,7 @@
   <!-- ============ PLAY ============ -->
   <section class="screen" id="s-play">
     <header class="play-top">
-      <div class="tile sm" id="playLetter">א</div>
+      <div class="letter-seal sm" id="playLetter">א</div>
       <div class="play-info">
         <div class="play-round" id="playRound"></div>
         <div class="play-player" id="playPlayer"></div>
@@ -229,14 +259,14 @@
     <div class="opps" id="opps"></div>
     <div class="scroll" id="answersScroll"><div id="answers" class="answers"></div></div>
     <footer class="bottombar">
-      <button class="btn btn-big btn-red btn-full" id="stopBtn">✋ עצור!</button>
+      <button class="btn btn-stop btn-big btn-full" id="stopBtn">עצור</button>
     </footer>
   </section>
 
   <!-- ============ LISTS MODE ============ -->
   <section class="screen" id="s-list">
     <header class="play-top">
-      <div class="tile sm" id="listLetter">א</div>
+      <div class="letter-seal sm" id="listLetter">א</div>
       <div class="play-info">
         <div class="play-round" id="listRound"></div>
         <div class="play-player" id="listPlayer"></div>
@@ -253,14 +283,14 @@
     </div>
     <form class="list-form" id="listForm" autocomplete="off">
       <input id="listInput" class="inp" dir="rtl" lang="he" maxlength="28" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="send">
-      <button class="btn btn-yellow" type="submit">הוסף</button>
+      <button class="btn btn-gold" type="submit">הוסף</button>
     </form>
     <div class="scroll">
-      <p class="hint center" id="listEmpty">כתבו מילה ולחצו Enter או "הוסף". כמה שיותר מילים, אבל רק מילה שאף אחד אחר לא כתב מקבלת נקודות!</p>
+      <p class="hint center" id="listEmpty">כתבו מילה ולחצו Enter או "הוסף". כתבו כמה שיותר, אבל רק מילה שאף אחד אחר לא כתב מקבלת נקודות.</p>
       <div class="w-chips big" id="listChips"></div>
     </div>
     <footer class="bottombar">
-      <button class="btn btn-big btn-teal btn-full" id="listNext">לקטגוריה הבאה ←</button>
+      <button class="btn btn-outline btn-big btn-full" id="listNext">לקטגוריה הבאה</button>
     </footer>
   </section>
 
@@ -269,7 +299,7 @@
     <div class="center-col full">
       <div class="spinner"></div>
       <h2 id="collectTxt">סופרים נקודות...</h2>
-      <button class="btn btn-ghost hidden" id="collectNow">סיים את הסיבוב עכשיו</button>
+      <button class="btn btn-outline hidden" id="collectNow">סיים את הסיבוב עכשיו</button>
     </div>
   </section>
 
@@ -278,23 +308,19 @@
     <header class="topbar">
       <span></span>
       <h2 id="resTitle">תוצאות</h2>
-      <span class="tile xs" id="resLetter"></span>
+      <span class="letter-seal xs" id="resLetter"></span>
     </header>
     <div class="scroll">
-      <div class="legend" id="legend">
-        <span><i class="pts k-solo">15</i> רק לך</span>
-        <span><i class="pts k-uniq">10</i> תשובה ייחודית</span>
-        <span><i class="pts k-dup">5</i> תשובה כפולה</span>
-      </div>
+      <div class="legend" id="legend"></div>
       <p class="hint center" id="resHint"></p>
       <div id="resCats" class="res-grid"></div>
       <div class="card">
-        <h3>🏅 טבלת ניקוד</h3>
+        <h3>טבלת ניקוד</h3>
         <div id="standings" class="standings"></div>
       </div>
     </div>
     <footer class="bottombar">
-      <button class="btn btn-big btn-yellow btn-full" id="nextBtn">לסיבוב הבא</button>
+      <button class="btn btn-gold btn-big btn-full" id="nextBtn">לסיבוב הבא</button>
     </footer>
   </section>
 
@@ -302,20 +328,22 @@
   <section class="screen" id="s-final">
     <canvas id="confetti"></canvas>
     <div class="scroll center-col">
-      <h1 class="title small">🏆 סוף המשחק</h1>
+      <p class="eyebrow">סוף המשחק</p>
+      <div class="final-winner" id="finalWinner"></div>
+      <div class="rule" aria-hidden="true"><i></i></div>
       <div class="podium" id="podium"></div>
       <div class="card wide" id="finalRest"></div>
       <div class="final-btns">
-        <button class="btn btn-big btn-yellow" id="againBtn">🔁 משחק נוסף</button>
-        <button class="btn btn-big btn-ghost" id="homeBtn">🏠 לתפריט</button>
+        <button class="btn btn-gold btn-big" id="againBtn"><svg><use href="#i-again"/></svg>משחק נוסף</button>
+        <button class="btn btn-outline btn-big" id="homeBtn"><svg><use href="#i-home"/></svg>לתפריט</button>
       </div>
-      <p class="hint center hidden" id="finalWait">המארח יכול להתחיל משחק נוסף — תישארו בחדר</p>
+      <p class="hint center hidden" id="finalWait">המארח יכול להתחיל משחק נוסף. הישארו בחדר.</p>
     </div>
   </section>
 </main>
 
 <div class="stop-banner" id="stopBanner"><span id="stopBannerTxt"></span><b id="stopCount">5</b></div>
-<div class="stamp" id="stamp">עצור!</div>
+<div class="stamp" id="stamp"><span>עצור</span></div>
 
 <div class="modal hidden" id="modal">
   <div class="modal-box">

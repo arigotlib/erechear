@@ -118,8 +118,35 @@ function registerRemoteCats(defs) {
 }
 
 /* ================= constants ================= */
-const AVATARS = ['🦊', '🐼', '🐯', '🦁', '🐸', '🐵', '🐨', '🐙', '🦄', '🐧', '🐶', '🐱', '🐰', '🦉'];
-const BOT_AVATARS = ['🤖', '👾', '🛸', '🧠', '🎲', '🦾'];
+/* players are shown as a monogram (first letter of the name) on a chosen tone */
+const TONES = {
+  gold: '#c9a96e', ivory: '#e8dfcf', sage: '#9fb09a', rose: '#c79c98', sky: '#93a8c2',
+  plum: '#a594b4', sand: '#cbb595', slate: '#8f99a4', jade: '#7fa497', rust: '#b88566'
+};
+const AVATARS = Object.keys(TONES);
+const BOT_AVATARS = ['slate', 'jade', 'sky', 'plum', 'sand', 'rust'];
+const toneOf = a => TONES[a] || TONES.ivory;
+const initialOf = name => (String(name || '').trim()[0] || '·');
+function avHTML(p, cls = '') {
+  return `<span class="av ${cls} ${p.type === 'bot' ? 'is-bot' : ''}" style="--t:${toneOf(p.avatar)}">${esc(initialOf(p.name))}</span>`;
+}
+const tonePicker = sel => AVATARS.map(a => `<button class="tone ${a === sel ? 'on' : ''}" data-av="${a}" style="--t:${TONES[a]}" aria-label="${a}"></button>`).join('');
+
+/* thin line icons for the built-in categories; player-made categories get a serif monogram */
+const ICON_PATHS = {
+  country: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5M12 3.5C9.4 5.9 8.2 8.7 8.2 12s1.2 6.1 3.8 8.5"/>',
+  city: '<path d="M3.5 20.5h17M5 20.5V9.5l5-2.5v13.5M10 20.5V4.5l5.5 2.5v13.5M15.5 20.5v-8l4 1.5v6.5"/><path d="M7 12h1M7 15h1M12.5 9h1M12.5 12h1M12.5 15h1"/>',
+  animal: '<circle cx="6.8" cy="9.3" r="1.7"/><circle cx="10.2" cy="6.3" r="1.7"/><circle cx="13.8" cy="6.3" r="1.7"/><circle cx="17.2" cy="9.3" r="1.7"/><path d="M12 11.5c-2.9 0-5.3 3.3-5.3 5.5 0 1.5 1.2 2.5 2.6 2.5 1.1 0 1.7-.5 2.7-.5s1.6.5 2.7.5c1.4 0 2.6-1 2.6-2.5 0-2.2-2.4-5.5-5.3-5.5z"/>',
+  plant: '<path d="M6 19.5c0-8.3 5.6-14 14-14 0 8.4-5.7 14-14 14z"/><path d="M4 21.5l2-2M6 19.5c2.6-3.8 5.6-6.6 9.5-8.7"/>',
+  object: '<path d="M8 3.5h8l3 7.5H5z"/><path d="M12 11v8.5M8.5 20.5h7"/>',
+  name: '<circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5c1.4-3.7 4.3-5.7 7.5-5.7s6.1 2 7.5 5.7"/>',
+  job: '<rect x="3.5" y="7.5" width="17" height="12" rx="1.5"/><path d="M9 7.5V5.2c0-.4.3-.7.7-.7h4.6c.4 0 .7.3.7.7v2.3M3.5 12.5h17"/>',
+  food: '<path d="M7 3.5v17M4.8 3.5v4.8a2.2 2.2 0 0 0 4.4 0V3.5M17.2 20.5V3.5c-2.4 1.6-3.2 4.6-3.2 8h3.2"/>'
+};
+function catIcon(c) {
+  if (c && ICON_PATHS[c.id]) return `<svg class="ci" viewBox="0 0 24 24" aria-hidden="true">${ICON_PATHS[c.id]}</svg>`;
+  return `<span class="ci mono">${esc(initialOf(c && c.name))}</span>`;
+}
 const COLORS = ['#ff8fab', '#ffc078', '#ffe066', '#8ce99a', '#63e6be', '#74c0fc', '#91a7ff', '#e599f7', '#ffa8a8', '#66d9e8'];
 const BOT_NAMES = ['רובי', 'ביפ', 'פיקסל', 'נובה', 'טורבו', 'זיגי', 'מקס', 'צ׳יפי'];
 const LEVELS = {
@@ -147,13 +174,14 @@ const Sfx = {
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d);
     o.connect(g).connect(this.ctx.destination); o.start(t); o.stop(t + d + .03);
   },
-  click() { this.tone(620, .06, 'triangle', .07); },
-  tick() { this.tone(950, .035, 'square', .03); },
-  land() { [523, 659, 784].forEach((f, i) => this.tone(f, .28, 'triangle', .12, i * .07)); },
-  stop() { this.tone(260, .4, 'sawtooth', .1, 0, 120); this.tone(196, .45, 'square', .05, .04); },
-  warn() { this.tone(1250, .07, 'sine', .07); },
-  good() { this.tone(880, .1, 'triangle', .09); this.tone(1320, .16, 'triangle', .07, .08); },
-  win() { [523, 659, 784, 1046, 784, 1046].forEach((f, i) => this.tone(f, .3, 'triangle', .11, i * .13)); }
+  // soft, low-volume sine tones: a bell-like palette rather than arcade beeps
+  click() { this.tone(660, .08, 'sine', .045); },
+  tick() { this.tone(1400, .03, 'sine', .018); },
+  land() { [392, 494, 587, 784].forEach((f, i) => this.tone(f, 1.1, 'sine', .06, i * .06)); },
+  stop() { this.tone(220, .7, 'sine', .09, 0, 165); this.tone(330, .5, 'sine', .04, .03); },
+  warn() { this.tone(988, .12, 'sine', .035); },
+  good() { this.tone(784, .35, 'sine', .05); this.tone(1175, .5, 'sine', .035, .09); },
+  win() { [392, 523, 659, 784, 1046].forEach((f, i) => this.tone(f, 1.4, 'sine', .055, i * .16)); }
 };
 
 /* ================= ui helpers ================= */
@@ -186,7 +214,7 @@ function closeModal() { $('#modal').classList.add('hidden'); }
 const modalOpen = () => !$('#modal').classList.contains('hidden');
 
 function showRules() {
-  modal(`<h3>📖 איך משחקים ארץ עיר?</h3>
+  modal(`<h3>איך משחקים ארץ עיר</h3>
   <p>בכל סיבוב מוגרלת אות. צריך למצוא לכל קטגוריה מילה שמתחילה באות הזאת — מהר ככל האפשר!</p>
   <ul>
     <li><b>15 נקודות</b> — רק אתם עניתם בקטגוריה.</li>
@@ -194,22 +222,15 @@ function showRules() {
     <li><b>5 נקודות</b> — תשובה שגם שחקן אחר כתב.</li>
     <li><b>0</b> — ריק, אות שגויה או תשובה שנפסלה.</li>
   </ul>
-  <p><b>✋ עצור!</b> — מי שממלא את כל השדות ראשון יכול לעצור. לשאר נשארות ${GRACE} שניות להשלים.</p>
-  <p><b>📝 מצב רשימות:</b> בכל קטגוריה בתורה יש זמן קצוב לכתוב כמה שיותר מילים. כל מילה ששום שחקן אחר לא כתב שווה 10 נקודות, ומילה שגם מישהו אחר כתב נפסלת.</p>
+  <p><b>עצור:</b> מי שממלא את כל השדות ראשון יכול לעצור. לשאר נשארות ${GRACE} שניות להשלים.</p>
+  <p><b>מצב רשימות:</b> בכל קטגוריה בתורה יש זמן קצוב לכתוב כמה שיותר מילים. כל מילה ששום שחקן אחר לא כתב שווה 10 נקודות, ומילה שגם מישהו אחר כתב נפסלת.</p>
   <p><b>פסילת תשובות:</b> בסוף כל סיבוב לוחצים על תשובה כדי לפסול אותה. באונליין כל שחקן מצביע, ותשובה נפסלת כשרוב השחקנים חושבים שהיא לא נכונה. תשובה עם <b>?</b> לא נמצאה במאגר, אז תחליטו ביחד.</p>
   <p><b>כתיב שונה:</b> המשחק מזהה את אותה תשובה גם בכתיב קצת שונה (ליכטנשטיין = ליכטינשטין) וגם עם שגיאת הקלדה קטנה.</p>
   <p><b>מול המחשב:</b> קל — עונה על חלק ולא עוצר · בינוני — עונה על רוב ולפעמים עוצר · קשה — מהיר מאוד!</p>`);
 }
 
 /* ================= background ================= */
-function buildBg() {
-  const bg = $('#bg'); let h = '';
-  for (let i = 0; i < 18; i++) {
-    const size = rnd(40, 120) | 0, dur = rnd(18, 40), delay = -rnd(0, 40);
-    h += `<span style="right:${rnd(-5, 95)}%;font-size:${size}px;animation-duration:${dur}s;animation-delay:${delay}s">${pick(LETTERS)}</span>`;
-  }
-  bg.innerHTML = h;
-}
+function buildBg() { /* the background is pure CSS (ink, grain, vignette) */ }
 
 /* ================= state ================= */
 let ROLE = 'local';      // local | host | client
@@ -221,7 +242,7 @@ let CL = null;           // client lobby info
 
 const pub = p => ({ id: p.id, name: p.name, type: p.type === 'bot' ? 'bot' : 'human', avatar: p.avatar, color: p.color, level: p.level || null });
 const myName = () => store.get('name', '') || 'אני';
-const myAvatar = () => store.get('avatar', AVATARS[0]);
+const myAvatar = () => { const a = store.get('avatar', 'gold'); return TONES[a] ? a : 'gold'; };
 
 function makeHuman(name, i, avatar) {
   return { id: uid(), name, type: 'human', avatar: avatar || AVATARS[i % AVATARS.length], color: COLORS[i % COLORS.length] };
@@ -267,8 +288,8 @@ function renderSetup() {
   renderPlayers();
   const s = SETUP.settings;
   $('#catChips').innerHTML = allCats().map(c =>
-    `<span class="chip-wrap"><button class="chip ${s.cats.includes(c.id) ? 'on' : ''}" style="--c:${c.color}" data-cat="${c.id}">${esc(c.icon)} ${esc(c.name)}</button>${c.custom ? `<button class="chip-x" data-del="${c.id}" aria-label="מחק קטגוריה">✕</button>` : ''}</span>`).join('')
-    + '<button class="chip chip-add" id="addCat">＋ קטגוריה משלכם</button>';
+    `<span class="chip-wrap"><button class="chip ${s.cats.includes(c.id) ? 'on' : ''}" data-cat="${c.id}">${catIcon(c)}${esc(c.name)}</button>${c.custom ? `<button class="chip-x" data-del="${c.id}" aria-label="מחק קטגוריה">×</button>` : ''}</span>`).join('')
+    + '<button class="chip chip-add" id="addCat">+ קטגוריה משלכם</button>';
   $('#catCount').textContent = `${s.cats.length} נבחרו`;
   const online = SETUP.mode === 'online';
   $$('#s-setup .seg[data-key]').forEach(seg => {
@@ -299,13 +320,13 @@ function renderPlayers() {
     const editable = p.type === 'human' && (SETUP.mode === 'local' || p.me);
     const removable = !p.me && !(p.type === 'human' && humans <= 1);
     return `<div class="p-row" data-i="${i}">
-      <button class="p-av" style="--pc:${p.color}" data-a="av" aria-label="החלף דמות">${p.avatar}</button>
+      <button class="av-btn" data-a="av" aria-label="החלף גוון">${avHTML(p)}</button>
       ${editable
         ? `<input class="inp p-name" data-a="name" value="${esc(p.name)}" maxlength="14" autocomplete="off">`
-        : `<div class="p-name-static">${esc(p.name)}${p.me ? ' <small>(את/ה)</small>' : ''}</div>`}
+        : `<div class="p-name-static">${esc(p.name)}${p.me ? ' <small>את/ה</small>' : ''}</div>`}
       ${p.type === 'bot' ? `<div class="seg small">${Object.entries(LEVELS).map(([k, l]) => `<button class="${p.level === k ? 'on' : ''}" data-a="lvl" data-l="${k}">${l.name}</button>`).join('')}</div>`
-        : p.type === 'remote' ? '<span class="tag">🌐 מחובר</span>' : ''}
-      ${removable ? '<button class="icon-btn small" data-a="rm" aria-label="הסר">✕</button>' : ''}
+        : p.type === 'remote' ? '<span class="tag">מחובר</span>' : ''}
+      ${removable ? '<button class="icon-btn small" data-a="rm" aria-label="הסר">×</button>' : ''}
     </div>`;
   }).join('');
   const full = SETUP.players.length >= MAX_PLAYERS;
@@ -330,8 +351,7 @@ function bindSetup() {
     const a = b.dataset.a;
     if (a === 'av') {
       if (p.type === 'remote') return;
-      const set = p.type === 'bot' ? BOT_AVATARS : AVATARS;
-      p.avatar = set[(set.indexOf(p.avatar) + 1) % set.length];
+      p.avatar = AVATARS[(AVATARS.indexOf(p.avatar) + 1) % AVATARS.length];
       if (p.me) store.set('avatar', p.avatar);
       Sfx.click();
     } else if (a === 'rm') {
@@ -379,9 +399,9 @@ function bindSetup() {
   });
   $('#startGame').onclick = startGame;
   $('#shareRoom').onclick = () => {
-    const text = `בואו לשחק איתי ארץ עיר! 🌍 קוד החדר: ${Net.code}`;
+    const text = `בואו לשחק איתי ארץ עיר. קוד החדר: ${Net.code}`;
     if (navigator.share) navigator.share({ text }).catch(() => {});
-    else if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast('ההזמנה הועתקה ✔'), () => toast('קוד החדר: ' + Net.code));
+    else if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => toast('ההזמנה הועתקה'), () => toast('קוד החדר: ' + Net.code));
     else toast('קוד החדר: ' + Net.code);
   };
 }
@@ -407,12 +427,11 @@ function askCustomTime(key) {
 /* ---------- custom categories ---------- */
 function openAddCat() {
   Sfx.click();
-  let icon = CAT_ICONS[0];
-  modal(`<h3>＋ קטגוריה חדשה</h3>
-    <p>למשל: סדרות, קבוצות כדורגל, מותגים, זמרים...</p>
+  const icon = CAT_ICONS[0];
+  modal(`<h3>קטגוריה חדשה</h3>
+    <p>למשל: סדרות, קבוצות כדורגל, מותגים, זמרים.</p>
     <input id="newCatName" class="inp" maxlength="16" placeholder="שם הקטגוריה" autocomplete="off">
-    <div class="icon-pick" id="newCatIcons">${CAT_ICONS.map((ic, i) => `<button class="${i ? '' : 'on'}" data-ic="${ic}">${ic}</button>`).join('')}</div>
-    <p class="hint">💡 המחשב לא מכיר קטגוריות שאתם מוסיפים, ולכן ישאיר אותן ריקות. תשובות בהן מסומנות ב־? ואפשר לפסול אותן בסוף הסיבוב.</p>`,
+    <p class="hint">המחשב לא מכיר קטגוריות שאתם מוסיפים, ולכן ישאיר אותן ריקות. תשובות בהן מסומנות ב־? ואפשר לפסול אותן בסוף הסיבוב.</p>`,
   [{ label: 'הוסף', cls: 'btn-yellow', keep: true, fn: () => {
       const name = $('#newCatName').value.trim().replace(/\s+/g, ' ');
       if (!name) { toast('כתבו שם לקטגוריה'); $('#newCatName').focus(); return false; }
@@ -422,13 +441,9 @@ function openAddCat() {
       SETUP.settings.cats.push(c.id);
       store.set('settings', SETUP.settings);
       Sfx.good(); renderSetup(); setupChanged();
-      toast(`הקטגוריה "${name}" נוספה ונשמרה ✔`);
+      toast(`הקטגוריה "${name}" נוספה ונשמרה`);
     } },
   { label: 'ביטול' }]);
-  $('#newCatIcons').onclick = e => {
-    const b = e.target.closest('[data-ic]'); if (!b) return;
-    icon = b.dataset.ic; $$('#newCatIcons button').forEach(x => x.classList.toggle('on', x === b));
-  };
   $('#newCatName').addEventListener('keydown', e => { if (e.key === 'Enter') $('#modalBtns .btn-yellow').click(); });
   setTimeout(() => $('#newCatName').focus(), 100);
 }
@@ -522,7 +537,7 @@ function runSpin(letter, n, total) {
       if (i >= 20) {
         tile.textContent = letter; void tile.offsetWidth; tile.classList.add('land');
         Sfx.land(); vib(40);
-        hint.innerHTML = `האות היא <b>${letter}</b>!`;
+        hint.innerHTML = `האות היא <b>${letter}</b>`;
         setTimeout(res, 1150); return;
       }
       let l; do { l = pick(LETTERS); } while (l === tile.textContent);
@@ -537,7 +552,7 @@ function nextTurn() {
   const id = R.queue.shift();
   if (!id) { R.cut = R.dur || Infinity; return finishRound(); }
   const p = G.players.find(x => x.id === id);
-  $('#passAv').textContent = p.avatar; $('#passAv').style.setProperty('--pc', p.color);
+  $('#passAv').innerHTML = avHTML(p, 'xl');
   $('#passName').textContent = p.name; $('#passLetter').textContent = R.letter;
   $('#passReady').onclick = () => { if (current !== 'pass') return; Sfx.click(); if (R.lists) startLists(p); else startPlay(p); };
   show('pass');
@@ -550,10 +565,10 @@ function startPlay(p) {
   PLAY.stopMode = !!(G.settings.stopRule && R.realtime);
   $('#playLetter').textContent = L;
   $('#playRound').textContent = `סיבוב ${R.n} מתוך ${G.settings.rounds}`;
-  $('#playPlayer').textContent = `${p.avatar} ${p.name}`;
+  $('#playPlayer').innerHTML = `${avHTML(p, 'xs')}<span>${esc(p.name)}</span>`;
   $('#answers').innerHTML = cats.map((id, i) => {
     const c = getCat(id) || { name: '?', icon: '❔', color: '#999999' };
-    return `<label class="ans" style="--c:${c.color}"><span class="ans-ic">${esc(c.icon)}</span>
+    return `<label class="ans"><span class="ans-ic">${catIcon(c)}</span>
       <span class="ans-body"><div class="ans-name">${esc(c.name)}</div>
       <input data-cat="${id}" dir="rtl" lang="he" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
         enterkeyhint="${i < cats.length - 1 ? 'next' : 'done'}" maxlength="28" placeholder="${esc(c.name)} ב־${L}..."></span></label>`;
@@ -580,11 +595,11 @@ function collectAnswers() {
 function updateStopBtn() {
   const btn = $('#stopBtn'), total = G.settings.cats.length, n = filledCount();
   if (PLAY.stopMode) {
-    btn.textContent = n >= total ? '✋ עצור!' : `✋ עצור! (${n}/${total})`;
-    btn.classList.toggle('btn-red', n >= total); btn.classList.toggle('btn-ghost', n < total);
+    btn.textContent = n >= total ? 'עצור' : `עצור · ${n}/${total}`;
+    btn.classList.toggle('ready', n >= total);
   } else {
-    btn.textContent = `✔ סיימתי (${n}/${total})`;
-    btn.classList.add('btn-red'); btn.classList.remove('btn-ghost');
+    btn.textContent = `סיימתי · ${n}/${total}`;
+    btn.classList.add('ready');
   }
 }
 
@@ -625,7 +640,7 @@ function renderOpps() {
   const total = G.settings.cats.length;
   const html = G.players.filter(p => p.id !== PLAY.pid).map(p => {
     const n = R.progress[p.id] || 0;
-    return `<div class="opp ${p.left ? 'left' : ''}"><span class="o-av" style="--pc:${p.color}">${p.avatar}</span>${esc(p.name)}<span class="o-bar"><i style="width:${n / total * 100}%"></i></span></div>`;
+    return `<div class="opp ${p.left ? 'left' : ''}">${avHTML(p, 'xs')}<span class="o-name">${esc(p.name)}</span><span class="o-bar"><i style="width:${n / total * 100}%"></i></span></div>`;
   }).join('');
   if (html !== PLAY.oppsHtml) { PLAY.oppsHtml = html; $('#opps').innerHTML = html; }
 }
@@ -659,7 +674,7 @@ function beginGrace(name, self) {
   Sfx.stop(); vib([120, 60, 120]);
   const st = $('#stamp'); st.classList.remove('go'); void st.offsetWidth; st.classList.add('go');
   $('#stopBtn').disabled = true;
-  $('#stopBannerTxt').textContent = self ? 'עצרת! השאר משלימים...' : `✋ ${name} אמר/ה עצור! מהר להשלים`;
+  $('#stopBannerTxt').textContent = self ? 'עצרת! השאר משלימים...' : `${name} עצר/ה. השלימו מהר`;
   let left = GRACE; $('#stopCount').textContent = left;
   $('#stopBanner').classList.add('show');
   PLAY.graceIv = setInterval(() => {
@@ -680,11 +695,11 @@ function endPlay(reason) {
     return;
   }
   R.answers[PLAY.pid] = ans;
-  if (!R.realtime) { if (reason === 'time') { Sfx.stop(); toast('⏰ נגמר הזמן!'); } return nextTurn(); }
+  if (!R.realtime) { if (reason === 'time') { Sfx.stop(); toast('נגמר הזמן'); } return nextTurn(); }
   if (reason === 'stop') R.cut = R.stopAt + GRACE;
   else if (reason === 'time') R.cut = R.dur;
   else R.cut = R.dur || Infinity;
-  if (reason === 'time') { Sfx.stop(); toast('⏰ נגמר הזמן!'); }
+  if (reason === 'time') { Sfx.stop(); toast('נגמר הזמן'); }
   if (ROLE === 'host') {
     if (reason !== 'done') Net.broadcast({ t: 'collect' });
     waitRemote(reason);
@@ -718,7 +733,7 @@ function startLists(p) {
   G.settings.cats.forEach(c => { PLAY.lists[c] = []; });
   $('#listLetter').textContent = R.letter;
   $('#listRound').textContent = `סיבוב ${R.n} מתוך ${G.settings.rounds}`;
-  $('#listPlayer').textContent = `${p.avatar} ${p.name}`;
+  $('#listPlayer').innerHTML = `${avHTML(p, 'xs')}<span>${esc(p.name)}</span>`;
   show('list');
   requestWakeLock();
   nextListCat(false);
@@ -735,14 +750,14 @@ function nextListCat(timeUp) {
   const box = $('#listCat');
   box.style.setProperty('--c', c.color);
   box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop');
-  $('#listCatIc').textContent = c.icon;
+  $('#listCatIc').innerHTML = catIcon(c);
   $('#listCatName').textContent = `${c.name} ב־${R.letter}`;
   $('#listStep').textContent = `קטגוריה ${PLAY.ci + 1} מתוך ${cats.length}`;
-  $('#listNext').textContent = PLAY.ci === cats.length - 1 ? '✔ סיימתי' : 'לקטגוריה הבאה ←';
+  $('#listNext').textContent = PLAY.ci === cats.length - 1 ? 'סיימתי' : 'לקטגוריה הבאה';
   $('#listInput').value = ''; $('#listInput').classList.remove('bad');
   $('#listInput').placeholder = `${c.name} שמתחיל ב־${R.letter}...`;
   renderListChips();
-  if (timeUp) toast(`⏰ נגמר הזמן! עכשיו: ${c.name}`);
+  if (timeUp) toast(`נגמר הזמן. עכשיו: ${c.name}`);
   PLAY.t0 = performance.now(); PLAY.lastSec = -1;
   $('#listTimer').classList.remove('warn');
   PLAY.iv = setInterval(listTick, 200); listTick();
@@ -768,7 +783,7 @@ function addListWord(silent) {
   }
   const list = PLAY.lists[cat];
   if (list.some(w => resolve(w, cat, R.letter).canon === r.canon)) {
-    if (!silent) { toast('כבר כתבת את זה 😉'); inp.select(); }
+    if (!silent) { toast('כבר כתבת את זה'); inp.select(); }
     return;
   }
   list.push(v); inp.value = ''; inp.classList.remove('bad');
@@ -779,7 +794,7 @@ function renderListChips() {
   $('#listCount').textContent = list.length;
   $('#listEmpty').classList.toggle('hidden', list.length > 0);
   $('#listChips').innerHTML = list.map((w, i) => ({ w, i })).reverse()
-    .map(({ w, i }) => `<span class="w-chip ok">${esc(w)}<button class="w-x" data-i="${i}" aria-label="מחק">✕</button></span>`).join('');
+    .map(({ w, i }) => `<span class="w-chip ok">${esc(w)}<button class="w-x" data-i="${i}" aria-label="מחק">×</button></span>`).join('');
 }
 function endLists() {
   PLAY.ended = true; clearInterval(PLAY.iv); releaseWakeLock();
@@ -929,7 +944,7 @@ function refreshResults() {
   broadcastResults();
 }
 
-const medal = i => ['🥇', '🥈', '🥉'][i] || (i + 1);
+const medal = i => `<span class="rk rk-${i + 1}">${i + 1}</span>`;
 const whyWrong = (a, letter) => (norm(a)[0] === letter ? 'קצר מדי' : 'לא מתחיל באות ' + letter);
 
 /** o.act: 'toggle' (one device: tap rejects/restores) | 'vote' (online: tap = my vote) ; o.host: can move on */
@@ -942,14 +957,14 @@ function renderResults(res, players, std, o) {
     ? '<span><i class="pts k-uniq">10</i> לכל מילה שרק לך</span><span><i class="pts k-dup">כפול</i> מישהו אחר כתב = 0</span>'
     : '<span><i class="pts k-solo">15</i> רק לך</span><span><i class="pts k-uniq">10</i> תשובה ייחודית</span><span><i class="pts k-dup">5</i> תשובה כפולה</span>';
   const voteTag = (it, pid) => (o.act === 'vote' && it.base && it.vn > 0
-    ? `<span class="vote-tag ${(it.votes || []).includes(o.me) ? 'mine' : ''}">👎 ${it.vn}/${it.vt === Infinity || !it.vt ? '–' : it.vt}</span>` : '');
+    ? `<span class="vote-tag ${(it.votes || []).includes(o.me) ? 'mine' : ''}">פסילה ${it.vn}/${it.vt === Infinity || !it.vt ? '–' : it.vt}</span>` : '');
   $('#resCats').innerHTML = res.cats.map((c, ci) => {
     const cat = getCat(c) || { name: '?', icon: '❔', color: '#999999' };
     const rows = players.map(p => {
       if (lists) {
         const items = ((res.lists || {})[p.id] || {})[c] || [];
         const sum = items.reduce((s, it) => s + it.pts, 0);
-        return `<div class="res-row list-row"><span class="r-av" style="--pc:${p.color}">${p.avatar}</span>
+        return `<div class="res-row list-row">${avHTML(p, 'sm')}
           <span class="r-main"><div class="r-name">${esc(p.name)} · ${items.length} מילים</div>
           <div class="w-chips">${items.length ? items.map((it, i) => `<button class="w-chip ${it.ok ? (it.dup ? 'dup' : 'ok') : 'no'} ${o.act !== 'none' && it.base ? 'tap' : ''}"
               data-pid="${p.id}" data-cat="${c}" data-i="${i}" title="${it.st === 'wrong' ? whyWrong(it.a, res.letter) : it.m ? 'זוהה כ: ' + esc(it.m) : ''}">${esc(it.a)}${it.st === 'unknown' && it.ok ? '<sup>?</sup>' : ''}${voteTag(it, p.id)}</button>`).join('') : '<i class="none">—</i>'}</div></span>
@@ -959,26 +974,26 @@ function renderResults(res, players, std, o) {
       const why = cell.st === 'wrong' ? whyWrong(cell.a, res.letter)
         : !cell.ok && cell.a ? (o.act === 'vote' ? 'נפסל בהצבעה' : 'נפסל') : cell.m ? 'זוהה כ: ' + esc(cell.m) : '';
       return `<div class="res-row ${o.act !== 'none' && cell.base ? 'tap' : ''} ${cell.ok ? '' : 'no'} st-${cell.st}" data-pid="${p.id}" data-cat="${c}">
-        <span class="r-av" style="--pc:${p.color}">${p.avatar}</span>
+        ${avHTML(p, 'sm')}
         <span class="r-main"><div class="r-name">${esc(p.name)}</div>
         <div class="r-ans">${cell.a ? esc(cell.a) : '<i>—</i>'}${cell.st === 'unknown' && cell.ok ? '<sup title="לא נמצא במאגר">?</sup>' : ''}${voteTag(cell, p.id)}</div>
         ${why ? `<div class="r-why ${cell.m && cell.ok ? 'ok' : ''}">${why}</div>` : ''}</span>
         <span class="pts k-${cell.ok ? cell.kind : 'zero'}">${cell.pts}</span></div>`;
     }).join('');
-    return `<div class="res-card" style="--c:${cat.color};animation-delay:${ci * 60}ms"><div class="res-h"><span>${esc(cat.icon)}</span>${esc(cat.name)}</div>${rows}</div>`;
+    return `<div class="res-card" style="animation-delay:${ci * 50}ms"><div class="res-h">${catIcon(cat)}<span>${esc(cat.name)}</span></div>${rows}</div>`;
   }).join('');
   $('#standings').innerHTML = std.map((s, i) => {
-    const p = P[s.id] || { name: '?', avatar: '❔', color: '#888' };
-    return `<div class="std-row" style="animation-delay:${i * 70}ms"><span class="rank">${medal(i)}</span>
-      <span class="r-av" style="--pc:${p.color}">${p.avatar}</span><span class="std-name">${esc(p.name)}</span>
+    const p = P[s.id] || { name: '?', avatar: 'ivory' };
+    return `<div class="std-row" style="animation-delay:${i * 70}ms">${medal(i)}
+      ${avHTML(p, 'sm')}<span class="std-name">${esc(p.name)}</span>
       <span class="std-plus">+${s.last}</span><span class="std-total">${s.total}</span></div>`;
   }).join('');
   $('#resHint').textContent = o.act === 'vote'
-    ? '👎 חושבים שתשובה לא נכונה? לחצו עליה כדי להצביע. אם רוב השחקנים מסכימים, היא נפסלת.'
+    ? 'חושבים שתשובה לא נכונה? לחצו עליה כדי להצביע. אם רוב השחקנים מסכימים, היא נפסלת.'
     : 'לחצו על תשובה כדי לפסול אותה, ולחצו שוב כדי להחזיר';
   const nb = $('#nextBtn');
   nb.classList.toggle('hidden', !o.host);
-  nb.textContent = o.isLast ? 'לתוצאות הסופיות 🏆' : 'לסיבוב הבא ←';
+  nb.textContent = o.isLast ? 'לתוצאות הסופיות' : 'לסיבוב הבא';
   $('#resCats').dataset.act = o.act;
   const wasOn = current === 'results';
   show('results');
@@ -1044,16 +1059,21 @@ function renderFinal(std, players, isClient) {
   const P = Object.fromEntries(players.map(p => [p.id, p]));
   const order = [1, 0, 2].filter(i => std[i]);
   const cls = ['first', 'second', 'third'];
+  const winner = P[std[0].id];
+  const tie = std[1] && std[1].total === std[0].total;
+  $('#finalWinner').innerHTML = tie
+    ? '<span class="fw-label">תוצאה</span><span class="fw-name">תיקו</span>'
+    : `<span class="fw-label">במקום הראשון</span><span class="fw-name">${esc(winner.name)}</span>`;
   $('#podium').innerHTML = order.map(i => {
     const p = P[std[i].id];
-    return `<div class="pod ${cls[i]}" style="animation-delay:${(2 - i) * 180}ms"><span class="p-av" style="--pc:${p.color}">${p.avatar}</span>
-      <div class="pod-name">${esc(p.name)}</div><div class="pod-score">${std[i].total}</div><div class="pod-block">${i + 1}</div></div>`;
+    return `<div class="pod ${cls[i]}" style="animation-delay:${(2 - i) * 180}ms">${avHTML(p, i ? 'lg' : 'xl')}
+      <div class="pod-name">${esc(p.name)}</div><div class="pod-score">${std[i].total}</div><div class="pod-block"><span>${i + 1}</span></div></div>`;
   }).join('');
   const rest = std.slice(3);
   $('#finalRest').classList.toggle('hidden', !rest.length);
   $('#finalRest').innerHTML = rest.map((s, j) => {
     const p = P[s.id];
-    return `<div class="std-row"><span class="rank">${j + 4}</span><span class="r-av" style="--pc:${p.color}">${p.avatar}</span><span class="std-name">${esc(p.name)}</span><span class="std-total">${s.total}</span></div>`;
+    return `<div class="std-row">${medal(j + 3)}${avHTML(p, 'sm')}<span class="std-name">${esc(p.name)}</span><span class="std-total">${s.total}</span></div>`;
   }).join('');
   $('#againBtn').classList.toggle('hidden', isClient);
   $('#finalWait').classList.toggle('hidden', !isClient);
@@ -1201,7 +1221,7 @@ function cleanPlayer(p) {
   p = p || {};
   return {
     id: ID_RE.test(p.id) ? p.id : 'x-' + uid(), name: cleanStr(p.name, 14).trim() || '?',
-    type: p.type === 'bot' ? 'bot' : 'human', avatar: ALL_AVATARS.includes(p.avatar) ? p.avatar : '❔',
+    type: p.type === 'bot' ? 'bot' : 'human', avatar: ALL_AVATARS.includes(p.avatar) ? p.avatar : 'ivory',
     color: COLOR_RE.test(p.color) ? p.color : '#999999', level: LEVELS[p.level] ? p.level : null
   };
 }
@@ -1260,7 +1280,7 @@ const Host = {
         const name = cleanStr(d.name, 14).trim() || 'שחקן ' + (i + 1);
         SETUP.players.push({ id, name, type: 'remote', avatar: AVATARS.includes(d.avatar) ? d.avatar : AVATARS[i % AVATARS.length], color: COLORS[i % COLORS.length] });
         if (SETUP.quick) renderQuick(); else renderSetup();
-        toast(`${name} הצטרף/ה 🎉`); Sfx.good(); vib(30);
+        toast(`${name} הצטרף/ה`); Sfx.good(); vib(30);
         broadcastLobby();
         break;
       }
@@ -1368,17 +1388,17 @@ const Client = {
 function renderWait() {
   if (!CL) return;
   $('#waitCode').textContent = CL.code || Net.code;
-  $('#waitPlayers').innerHTML = (CL.players || []).map(p => `<div class="p-row"><span class="p-av" style="--pc:${p.color}">${p.avatar}</span>
-    <div class="p-name-static">${esc(p.name)}${p.id === Net.myId ? ' <small>(את/ה)</small>' : ''}</div>
-    ${p.type === 'bot' ? `<span class="tag">🤖 ${LEVELS[p.level] ? LEVELS[p.level].name : ''}</span>` : ''}</div>`).join('');
+  $('#waitPlayers').innerHTML = (CL.players || []).map(p => `<div class="p-row">${avHTML(p)}
+    <div class="p-name-static">${esc(p.name)}${p.id === Net.myId ? ' <small>את/ה</small>' : ''}</div>
+    ${p.type === 'bot' ? `<span class="tag">מחשב · ${LEVELS[p.level] ? LEVELS[p.level].name : ''}</span>` : ''}</div>`).join('');
   const s = CL.settings || DEFAULTS;
-  $('#waitCats').innerHTML = (s.cats || []).map(id => { const c = getCat(id); return c ? `<span class="chip on" style="--c:${c.color}">${esc(c.icon)} ${esc(c.name)}</span>` : ''; }).join('');
+  $('#waitCats').innerHTML = (s.cats || []).map(id => { const c = getCat(id); return c ? `<span class="chip on">${catIcon(c)}${esc(c.name)}</span>` : ''; }).join('');
   $('#waitInfo').textContent = `${s.rounds} סיבובים · ${s.timer ? s.timer + ' שניות לסיבוב' : 'ללא הגבלת זמן'}${s.stopRule ? ' · עם "עצור!"' : ''}`;
 }
 
 function bindOnline() {
   const nameInp = $('#onName');
-  const renderAv = () => { $('#onAvatar').innerHTML = AVATARS.map(a => `<button class="${a === myAvatar() ? 'on' : ''}" data-av="${a}">${a}</button>`).join(''); };
+  const renderAv = () => { $('#onAvatar').innerHTML = tonePicker(myAvatar()); };
   $('#onAvatar').addEventListener('click', e => { const b = e.target.closest('[data-av]'); if (!b) return; store.set('avatar', b.dataset.av); Sfx.click(); renderAv(); });
   nameInp.addEventListener('input', () => store.set('name', nameInp.value.trim()));
   const needName = () => { if (!nameInp.value.trim()) { toast('כתבו את השם שלכם'); nameInp.focus(); return true; } return false; };
@@ -1503,8 +1523,8 @@ function renderQuick() {
   const players = isHost ? SETUP.players.map(pub) : (CL ? CL.players : []);
   const left = isHost ? quickInfo().left : (CL && CL.quick ? CL.quick.left : -1);
   $('#quickRoom').classList.remove('hidden');
-  $('#quickPlayers').innerHTML = players.map(p => `<div class="p-row"><span class="p-av" style="--pc:${p.color}">${p.avatar}</span>
-    <div class="p-name-static">${esc(p.name)}${p.id === Net.myId ? ' <small>(את/ה)</small>' : ''}</div>${p.type === 'bot' ? '<span class="tag">🤖 מחשב</span>' : ''}</div>`).join('');
+  $('#quickPlayers').innerHTML = players.map(p => `<div class="p-row">${avHTML(p)}
+    <div class="p-name-static">${esc(p.name)}${p.id === Net.myId ? ' <small>את/ה</small>' : ''}</div>${p.type === 'bot' ? '<span class="tag">מחשב</span>' : ''}</div>`).join('');
   if (players.length < 2) {
     radar.classList.remove('found');
     $('#quickTitle').textContent = 'מחכים לשחקנים נוספים...';
@@ -1533,17 +1553,17 @@ function recordStats(std) {
   store.set('stats', st);
 }
 function renderHomeProfile() {
-  $('#pcAv').textContent = myAvatar();
+  $('#pcAv').innerHTML = avHTML({ name: store.get('name', '') || '?', avatar: myAvatar() }, 'sm');
   $('#pcName').textContent = store.get('name', '') || 'אורח';
 }
 function renderProfile() {
-  $('#profAv').textContent = myAvatar();
-  $('#profName').value = store.get('name', '');
-  $('#profAvatars').innerHTML = AVATARS.map(a => `<button class="${a === myAvatar() ? 'on' : ''}" data-av="${a}">${a}</button>`).join('');
+  $('#profAv').innerHTML = avHTML({ name: store.get('name', '') || '?', avatar: myAvatar() }, 'xxl');
+  if (document.activeElement !== $('#profName')) $('#profName').value = store.get('name', '');
+  $('#profAvatars').innerHTML = tonePicker(myAvatar());
   const s = getStats();
   const tiles = [
-    ['🎮', s.games, 'משחקים'], ['🏆', s.wins, 'ניצחונות'], ['📈', s.games ? Math.round(s.wins / s.games * 100) + '%' : '—', 'אחוז ניצחון'],
-    ['⭐', s.best, 'שיא נקודות'], ['💯', s.total, 'סה״כ נקודות'], ['➗', s.games ? Math.round(s.total / s.games) : '—', 'ממוצע למשחק']
+    ['', s.games, 'משחקים'], ['', s.wins, 'ניצחונות'], ['', s.games ? Math.round(s.wins / s.games * 100) + '%' : '—', 'אחוז ניצחון'],
+    ['', s.best, 'שיא נקודות'], ['', s.total, 'סה״כ נקודות'], ['', s.games ? Math.round(s.total / s.games) : '—', 'ממוצע למשחק']
   ];
   $('#profStats').innerHTML = tiles.map(([ic, v, l]) => `<div class="stat"><b>${v}</b><span>${ic} ${l}</span></div>`).join('');
   $('#profSound').classList.toggle('on', Sfx.on);
@@ -1551,7 +1571,7 @@ function renderProfile() {
 }
 function bindProfile() {
   $('#profileChip').onclick = () => { Sfx.init(); Sfx.click(); renderProfile(); show('profile'); };
-  $('#profName').addEventListener('input', e => store.set('name', e.target.value.trim().slice(0, 14)));
+  $('#profName').addEventListener('input', e => { store.set('name', e.target.value.trim().slice(0, 14)); renderProfile(); });
   $('#profAvatars').addEventListener('click', e => {
     const b = e.target.closest('[data-av]'); if (!b) return;
     store.set('avatar', b.dataset.av); Sfx.click(); renderProfile();
@@ -1563,9 +1583,9 @@ function bindProfile() {
 }
 function welcome() {
   let av = myAvatar();
-  modal(`<h3>ברוכים הבאים לארץ עיר! 👋</h3><p>איך קוראים לך?</p>
+  modal(`<h3>ברוכים הבאים</h3><p>איך קוראים לך?</p>
     <input id="welName" class="inp" maxlength="14" placeholder="השם שלך" autocomplete="off">
-    <div class="avatar-pick" id="welAv">${AVATARS.map(a => `<button class="${a === av ? 'on' : ''}" data-av="${a}">${a}</button>`).join('')}</div>`,
+    <p class="hint">בחרו גוון:</p><div class="avatar-pick" id="welAv">${tonePicker(av)}</div>`,
   [{ label: 'יאללה!', cls: 'btn-yellow', fn: () => {
       const n = $('#welName').value.trim().slice(0, 14);
       if (!n) { toast('כתבו את השם שלכם'); return false; }
@@ -1585,23 +1605,31 @@ function releaseWakeLock() { try { wakeLock && wakeLock.release(); } catch (e) {
 function confetti() {
   const cv = $('#confetti'), ctx = cv.getContext('2d');
   const W = cv.width = cv.offsetWidth * devicePixelRatio, H = cv.height = cv.offsetHeight * devicePixelRatio;
-  const cols = ['#ffd23f', '#ff6b9d', '#2ee6c5', '#b197fc', '#74c0fc', '#ffa94d'];
-  const parts = Array.from({ length: 160 }, () => ({
-    x: Math.random() * W, y: -Math.random() * H * .6, vx: rnd(-1.5, 1.5) * devicePixelRatio, vy: rnd(2, 5) * devicePixelRatio,
-    s: rnd(6, 12) * devicePixelRatio, r: Math.random() * 6, vr: rnd(-.2, .2), c: pick(cols)
+  // slow, sparse gold dust instead of confetti
+  const dpr = devicePixelRatio || 1;
+  const parts = Array.from({ length: 70 }, () => ({
+    x: Math.random() * W, y: -Math.random() * H, vx: rnd(-.25, .25) * dpr, vy: rnd(.5, 1.4) * dpr,
+    s: rnd(.8, 2.4) * dpr, a: rnd(.35, .9), ph: Math.random() * 6.28
   }));
   const t0 = performance.now();
   (function frame(t) {
     ctx.clearRect(0, 0, W, H);
+    const fade = Math.min(1, (6000 - (t - t0)) / 1500);
     parts.forEach(p => {
-      p.x += p.vx; p.y += p.vy; p.r += p.vr; p.vy += .03;
-      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); ctx.restore();
+      p.x += p.vx + Math.sin(t / 900 + p.ph) * .2 * dpr; p.y += p.vy;
+      const tw = .55 + .45 * Math.sin(t / 260 + p.ph);
+      ctx.globalAlpha = Math.max(0, p.a * tw * fade);
+      ctx.fillStyle = '#d9bf8a';
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 6.283); ctx.fill();
     });
-    if (t - t0 < 5000 && current === 'final') requestAnimationFrame(frame); else ctx.clearRect(0, 0, W, H);
+    ctx.globalAlpha = 1;
+    if (t - t0 < 6000 && current === 'final') requestAnimationFrame(frame); else ctx.clearRect(0, 0, W, H);
   })(t0);
 }
 
-function paintSoundBtn() { $('#soundBtn').textContent = Sfx.on ? '🔊' : '🔇'; }
+const SVG_SOUND_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/></svg>';
+const SVG_SOUND_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
+function paintSoundBtn() { const b = $('#soundBtn'); b.innerHTML = Sfx.on ? SVG_SOUND_ON : SVG_SOUND_OFF; b.setAttribute('aria-label', Sfx.on ? 'השתק' : 'הפעל צליל'); }
 
 /* ================= init ================= */
 function init() {
