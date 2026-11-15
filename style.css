@@ -349,3 +349,91 @@ button { font-family: inherit; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* ---------- profile chip (home) ---------- */
+.profile-chip {
+  align-self: flex-start; display: flex; align-items: center; gap: 10px; cursor: pointer;
+  background: rgba(255,255,255,.08); border: 1px solid var(--card-b); color: #fff;
+  border-radius: 99px; padding: 5px 16px 5px 5px; margin-bottom: 6px; font: inherit; text-align: right;
+}
+.profile-chip:hover { background: rgba(255,255,255,.14); }
+.pc-av { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 1.4rem; background: var(--yellow); }
+.pc-txt b { display: block; font-size: 1rem; }
+.pc-txt small { color: var(--ink-dim); font-size: .78rem; }
+
+/* ---------- profile screen ---------- */
+.prof-av { width: 96px; height: 96px; font-size: 3.4rem; margin: 4px auto 14px; background: var(--yellow); }
+.prof-name { text-align: center; font-size: 1.3rem; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stat { background: rgba(0,0,0,.2); border-radius: 16px; padding: 12px 6px; text-align: center; }
+.stat b { display: block; font-size: 1.6rem; font-weight: 900; color: var(--yellow); }
+.stat span { font-size: .8rem; color: var(--ink-dim); font-weight: 600; }
+@media (max-width: 380px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+/* ---------- custom categories ---------- */
+.chip-wrap { position: relative; display: inline-flex; }
+.chip-x {
+  position: absolute; top: -6px; left: -6px; width: 22px; height: 22px; border-radius: 50%; border: 0; cursor: pointer;
+  background: var(--red); color: #fff; font-size: .7rem; font-weight: 900; display: grid; place-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+.chip-add { background: transparent; box-shadow: inset 0 0 0 2px dashed rgba(255,255,255,.3); border: 2px dashed rgba(255,255,255,.35); color: var(--yellow); }
+.icon-pick { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; justify-content: center; }
+.icon-pick button { width: 42px; height: 42px; border-radius: 12px; border: 0; font-size: 1.3rem; background: rgba(255,255,255,.08); cursor: pointer; }
+.icon-pick button.on { background: var(--yellow); transform: scale(1.08); }
+
+/* ---------- quick match ---------- */
+.quick-card { background: linear-gradient(135deg, rgba(255,210,63,.2), rgba(255,107,157,.18)); }
+.radar { position: relative; width: 150px; height: 150px; margin: 18px auto 10px; }
+.radar span { position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--teal); opacity: 0; animation: ping 2.4s ease-out infinite; }
+.radar span:nth-child(2) { animation-delay: .8s; }
+.radar span:nth-child(3) { animation-delay: 1.6s; }
+.radar-core { position: absolute; inset: 38px; border-radius: 50%; background: var(--yellow); display: grid; place-items: center; font-size: 2.6rem; box-shadow: 0 8px 30px rgba(255,210,63,.4); animation: bob 2s ease-in-out infinite; }
+@keyframes ping { 0% { transform: scale(.4); opacity: .9; } 100% { transform: scale(1.25); opacity: 0; } }
+.radar.found span { animation: none; }
+.quick-title { margin: 6px 0 0; }
+.quick-count { font-family: 'Secular One', 'Rubik', sans-serif; color: var(--yellow); font-size: 3rem; line-height: 1; }
+
+/* ---------- lists mode ---------- */
+.list-cat {
+  --c: var(--yellow);
+  display: flex; align-items: center; gap: 12px; margin: 4px 16px 10px; padding: 12px 14px;
+  background: var(--c); color: #1d1240; border-radius: 20px; box-shadow: 0 5px 0 rgba(0,0,0,.25);
+}
+.list-cat.pop { animation: catpop .45s cubic-bezier(.2,1.5,.4,1); }
+@keyframes catpop { from { transform: scale(.85); opacity: .3; } }
+.lc-ic { font-size: 2rem; width: 52px; height: 52px; display: grid; place-items: center; background: rgba(255,255,255,.45); border-radius: 16px; flex: none; }
+.lc-txt { flex: 1; min-width: 0; }
+.lc-step { font-size: .8rem; font-weight: 700; opacity: .7; }
+.lc-name { font-size: 1.35rem; font-weight: 900; }
+.lc-count { text-align: center; line-height: 1; }
+.lc-count b { display: block; font-size: 1.9rem; font-weight: 900; }
+.lc-count small { font-size: .75rem; font-weight: 700; }
+.list-form { display: flex; gap: 8px; padding: 0 16px; }
+.list-form .inp { flex: 1; background: #fff; color: #1d1240; border-width: 3px; }
+.list-form .inp.bad { border-color: var(--red); background: #fff0f1; }
+.list-form .btn { flex: none; }
+
+.w-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.w-chips.big { gap: 8px; }
+.w-chip {
+  display: inline-flex; align-items: center; gap: 6px; border: 0; font: inherit; font-weight: 700; font-size: .95rem;
+  padding: 5px 11px; border-radius: 99px; color: #1d1240; background: var(--teal);
+}
+.w-chips.big .w-chip { font-size: 1.1rem; padding: 7px 8px 7px 14px; animation: rise .25s ease; }
+.w-chip.dup { background: var(--yellow); text-decoration: line-through; text-decoration-thickness: 2px; }
+.w-chip.no { background: rgba(255,255,255,.12); color: rgba(255,255,255,.55); text-decoration: line-through; text-decoration-color: var(--red); }
+.w-chip.tap { cursor: pointer; }
+.w-chip sup { color: #8a5a00; font-weight: 900; }
+.w-x { border: 0; background: rgba(0,0,0,.15); color: #1d1240; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: .7rem; font-weight: 900; }
+.none { color: rgba(255,255,255,.3); font-style: normal; }
+.list-row { align-items: flex-start; }
+
+/* ---------- voting / matched spelling ---------- */
+.vote-tag { display: inline-block; margin-inline-start: 6px; font-size: .72rem; font-weight: 800; padding: 1px 7px; border-radius: 99px; background: rgba(255,77,94,.2); color: #ff8a95; text-decoration: none; vertical-align: middle; }
+.vote-tag.mine { background: var(--red); color: #fff; }
+.r-why.ok { color: var(--teal); }
+
+/* ---------- custom time ---------- */
+.time-pick { display: flex; align-items: center; gap: 8px; justify-content: center; }
+.time-pick .inp { width: 84px; text-align: center; font-size: 1.4rem; }
