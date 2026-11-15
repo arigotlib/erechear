@@ -1,0 +1,19 @@
+{
+  "name": "erechear",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ארץ עיר - משחק מילים",
+  "scripts": {
+    "serve": "npx --yes http-server www -p 8080 -c-1",
+    "sync": "npx cap sync android",
+    "android": "npx cap sync android && npx cap open android",
+    "apk": "npx cap sync android && cd android && gradlew.bat assembleDebug",
+    "deploy": "git subtree push --prefix www origin gh-pages"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/cli": "^8.6.2",
+    "@capacitor/core": "^8.6.2"
+  }
+}

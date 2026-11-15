@@ -1,0 +1,7 @@
+{
+  "appId": "com.erechear.game",
+  "appName": "ארץ עיר",
+  "webDir": "www",
+  "backgroundColor": "#1a1240",
+  "android": { "allowMixedContent": false }
+}

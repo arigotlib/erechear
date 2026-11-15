@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<meta name="theme-color" content="#1a1240">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ארץ עיר</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&family=Secular+One&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="bg" aria-hidden="true"></div>
+
+<main id="app">
+
+  <!-- ============ HOME ============ -->
+  <section class="screen active" id="s-home">
+    <div class="scroll center-col home">
+      <div class="logo" aria-hidden="true">
+        <span class="tile t1">א</span><span class="tile t2">ר</span><span class="tile t3">ץ</span>
+      </div>
+      <h1 class="title">ארץ <span>עיר</span></h1>
+      <p class="subtitle">משחק המילים הקלאסי — עם חברים או מול המחשב</p>
+      <div class="menu">
+        <button class="btn btn-menu btn-yellow" data-act="solo">
+          <span class="ic">🤖</span><span class="txt"><b>מול המחשב</b><small>אתגרו בוטים בשלוש רמות קושי</small></span>
+        </button>
+        <button class="btn btn-menu btn-pink" data-act="local">
+          <span class="ic">🎉</span><span class="txt"><b>כמה שחקנים</b><small>על מכשיר אחד, כל אחד בתורו</small></span>
+        </button>
+        <button class="btn btn-menu btn-teal" data-act="online">
+          <span class="ic">🌐</span><span class="txt"><b>אונליין עם חברים</b><small>כל אחד מהמכשיר שלו, עם קוד חדר</small></span>
+        </button>
+      </div>
+      <div class="home-foot">
+        <button class="btn btn-ghost" data-act="rules">📖 איך משחקים</button>
+        <button class="btn btn-ghost" id="soundBtn" aria-label="צליל">🔊</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SETUP ============ -->
+  <section class="screen" id="s-setup">
+    <header class="topbar">
+      <button class="icon-btn" data-act="back" aria-label="חזרה">➜</button>
+      <h2 id="setupTitle">הגדרות משחק</h2>
+      <span></span>
+    </header>
+    <div class="scroll">
+      <div class="card room-card hidden" id="roomCard">
+        <div class="room-label">קוד החדר</div>
+        <div class="room-code" id="roomCode">----</div>
+        <button class="btn btn-small btn-teal" id="shareRoom">📤 שתפו את הקוד</button>
+        <p class="hint">החברים בוחרים "אונליין" ← "הצטרפות" ומקלידים את הקוד</p>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h3>שחקנים</h3>
+          <div class="row-btns">
+            <button class="btn btn-small btn-pink" id="addHuman">+ שחקן</button>
+            <button class="btn btn-small btn-yellow" id="addBot">+ מחשב</button>
+          </div>
+        </div>
+        <div id="playersList" class="players-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><h3>קטגוריות</h3><span class="hint" id="catCount"></span></div>
+        <div id="catChips" class="chips"></div>
+      </div>
+
+      <div class="card">
+        <h3>חוקי המשחק</h3>
+        <div class="opt"><label>מספר סיבובים</label><div class="seg" data-key="rounds" data-vals="3,5,7,10"></div></div>
+        <div class="opt"><label>זמן לכל סיבוב</label><div class="seg" data-key="timer" data-vals="45,60,90,120,0" data-labels="45 ש׳,60 ש׳,90 ש׳,2 דק׳,∞"></div></div>
+        <div class="opt"><label>✋ "עצור!" — מי שמסיים ראשון עוצר לכולם<small id="stopNote"></small></label><button class="switch" data-key="stopRule" aria-label="עצור"></button></div>
+        <div class="opt"><label>כולל אותיות קשות (ה, ו, ז)</label><button class="switch" data-key="hardLetters" aria-label="אותיות קשות"></button></div>
+      </div>
+    </div>
+    <footer class="bottombar">
+      <button class="btn btn-big btn-yellow btn-full" id="startGame">יאללה, מתחילים! 🚀</button>
+    </footer>
+  </section>
+
+  <!-- ============ ONLINE ============ -->
+  <section class="screen" id="s-online">
+    <header class="topbar">
+      <button class="icon-btn" data-act="back" aria-label="חזרה">➜</button>
+      <h2>משחק אונליין</h2>
+      <span></span>
+    </header>
+    <div class="scroll">
+      <div class="card">
+        <h3>מי משחק?</h3>
+        <input id="onName" class="inp" maxlength="14" placeholder="השם שלך" autocomplete="off">
+        <div class="avatar-pick" id="onAvatar"></div>
+      </div>
+      <div class="card">
+        <h3>🏠 פתיחת חדר חדש</h3>
+        <p class="hint">אתם המארחים: קובעים את ההגדרות ומזמינים חברים</p>
+        <button class="btn btn-big btn-teal btn-full" id="createRoom">צור חדר</button>
+      </div>
+      <div class="card">
+        <h3>🚪 הצטרפות לחדר</h3>
+        <input id="joinCode" class="inp code-inp" inputmode="numeric" maxlength="4" placeholder="קוד בן 4 ספרות" autocomplete="off">
+        <button class="btn btn-big btn-pink btn-full" id="joinRoom">הצטרף</button>
+      </div>
+      <p class="hint center">צריך חיבור לאינטרנט. השחקנים מתחברים ישירות זה לזה.</p>
+    </div>
+  </section>
+
+  <!-- ============ WAIT (client lobby) ============ -->
+  <section class="screen" id="s-wait">
+    <header class="topbar">
+      <button class="icon-btn" data-act="back" aria-label="יציאה">➜</button>
+      <h2>חדר משחק</h2>
+      <span></span>
+    </header>
+    <div class="scroll">
+      <div class="card room-card">
+        <div class="room-label">מחוברים לחדר</div>
+        <div class="room-code" id="waitCode">----</div>
+      </div>
+      <div class="card"><h3>שחקנים בחדר</h3><div id="waitPlayers" class="players-list"></div></div>
+      <div class="card"><h3>קטגוריות</h3><div id="waitCats" class="chips static"></div><p class="hint" id="waitInfo"></p></div>
+      <div class="waiting">מחכים שהמארח יתחיל<span>.</span><span>.</span><span>.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ PASS DEVICE ============ -->
+  <section class="screen" id="s-pass">
+    <div class="center-col full">
+      <div class="pass-av" id="passAv"></div>
+      <h2 class="pass-name" id="passName"></h2>
+      <p class="pass-txt">התור שלך! קחו את המכשיר — ואחרים, בלי להציץ 👀</p>
+      <div class="tile mid" id="passLetter"></div>
+      <button class="btn btn-big btn-yellow" id="passReady">אני מוכן/ה — יאללה!</button>
+    </div>
+  </section>
+
+  <!-- ============ SPIN ============ -->
+  <section class="screen" id="s-spin">
+    <div class="center-col full">
+      <div class="round-pill" id="spinRound"></div>
+      <div class="tile huge" id="spinTile">?</div>
+      <p class="spin-hint" id="spinHint">מגרילים אות...</p>
+    </div>
+  </section>
+
+  <!-- ============ PLAY ============ -->
+  <section class="screen" id="s-play">
+    <header class="play-top">
+      <div class="tile sm" id="playLetter">א</div>
+      <div class="play-info">
+        <div class="play-round" id="playRound"></div>
+        <div class="play-player" id="playPlayer"></div>
+      </div>
+      <div class="timer" id="timer">
+        <svg viewBox="0 0 48 48"><circle class="tr-bg" cx="24" cy="24" r="20"/><circle class="tr-fg" id="timerRing" cx="24" cy="24" r="20"/></svg>
+        <span id="timerTxt"></span>
+      </div>
+    </header>
+    <div class="opps" id="opps"></div>
+    <div class="scroll" id="answersScroll"><div id="answers" class="answers"></div></div>
+    <footer class="bottombar">
+      <button class="btn btn-big btn-red btn-full" id="stopBtn">✋ עצור!</button>
+    </footer>
+  </section>
+
+  <!-- ============ COLLECT ============ -->
+  <section class="screen" id="s-collect">
+    <div class="center-col full">
+      <div class="spinner"></div>
+      <h2 id="collectTxt">סופרים נקודות...</h2>
+      <button class="btn btn-ghost hidden" id="collectNow">סיים את הסיבוב עכשיו</button>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="screen" id="s-results">
+    <header class="topbar">
+      <span></span>
+      <h2 id="resTitle">תוצאות</h2>
+      <span class="tile xs" id="resLetter"></span>
+    </header>
+    <div class="scroll">
+      <div class="legend">
+        <span><i class="pts k-solo">15</i> רק לך</span>
+        <span><i class="pts k-uniq">10</i> תשובה ייחודית</span>
+        <span><i class="pts k-dup">5</i> תשובה כפולה</span>
+      </div>
+      <p class="hint center" id="resHint"></p>
+      <div id="resCats" class="res-grid"></div>
+      <div class="card">
+        <h3>🏅 טבלת ניקוד</h3>
+        <div id="standings" class="standings"></div>
+      </div>
+    </div>
+    <footer class="bottombar">
+      <button class="btn btn-big btn-yellow btn-full" id="nextBtn">לסיבוב הבא</button>
+    </footer>
+  </section>
+
+  <!-- ============ FINAL ============ -->
+  <section class="screen" id="s-final">
+    <canvas id="confetti"></canvas>
+    <div class="scroll center-col">
+      <h1 class="title small">🏆 סוף המשחק</h1>
+      <div class="podium" id="podium"></div>
+      <div class="card wide" id="finalRest"></div>
+      <div class="final-btns">
+        <button class="btn btn-big btn-yellow" id="againBtn">🔁 משחק נוסף</button>
+        <button class="btn btn-big btn-ghost" id="homeBtn">🏠 לתפריט</button>
+      </div>
+      <p class="hint center hidden" id="finalWait">המארח יכול להתחיל משחק נוסף — תישארו בחדר</p>
+    </div>
+  </section>
+</main>
+
+<div class="stop-banner" id="stopBanner"><span id="stopBannerTxt"></span><b id="stopCount">5</b></div>
+<div class="stamp" id="stamp">עצור!</div>
+
+<div class="modal hidden" id="modal">
+  <div class="modal-box">
+    <div id="modalBody"></div>
+    <div class="modal-btns" id="modalBtns"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
