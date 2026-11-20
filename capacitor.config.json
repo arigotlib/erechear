@@ -2,6 +2,6 @@
   "appId": "com.erechear.game",
   "appName": "ארץ עיר",
   "webDir": "www",
-  "backgroundColor": "#100e0b",
+  "backgroundColor": "#173540",
   "android": { "allowMixedContent": false }
 }
