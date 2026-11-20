@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
-<meta name="theme-color" content="#100e0b">
+<meta name="theme-color" content="#173540">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="description" content="ארץ עיר: משחק המילים הקלאסי בעברית. מול המחשב, עם חברים על מכשיר אחד, או אונליין.">
@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Bellefair&family=Frank+Ruhl+Libre:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Suez+One&family=Karantina:wght@400;700&family=Rubik+Dirt&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -52,27 +52,28 @@
       </header>
 
       <div class="hero">
-        <div class="seal" aria-hidden="true"><span>א</span></div>
-        <p class="eyebrow">משחק המילים הקלאסי</p>
-        <h1 class="title">ארץ <em>עיר</em></h1>
-        <div class="rule" aria-hidden="true"><i></i></div>
+        <svg class="postmark" viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="54"/><circle cx="60" cy="60" r="44"/>
+          <path class="pm-star" d="M60 9l1.8 3.7 4 .6-2.9 2.8.7 4L60 18.2l-3.6 1.9.7-4-2.9-2.8 4-.6zM60 101l1.8 3.7 4 .6-2.9 2.8.7 4L60 110.2l-3.6 1.9.7-4-2.9-2.8 4-.6z"/>
+          <text x="60" y="74" text-anchor="middle">א</text>
+        </svg>
+        <svg class="cancel" viewBox="0 0 160 60" aria-hidden="true"><path d="M0 12q10-8 20 0t20 0 20 0 20 0 20 0 20 0 20 0 20 0M0 30q10-8 20 0t20 0 20 0 20 0 20 0 20 0 20 0 20 0M0 48q10-8 20 0t20 0 20 0 20 0 20 0 20 0 20 0 20 0"/></svg>
+        <h1 class="title"><span class="t1">ארץ</span><span class="t2">עיר</span></h1>
+        <p class="tagline">משחק המילים הקלאסי · יוצאים לדרך</p>
       </div>
 
-      <nav class="menu" aria-label="מצבי משחק">
-        <button class="menu-row" data-act="solo">
-          <span class="mr-ic"><svg><use href="#i-cpu"/></svg></span>
-          <span class="mr-txt"><b>מול המחשב</b><small>שלוש רמות קושי</small></span>
-          <svg class="mr-go"><use href="#i-go"/></svg>
+      <nav class="tickets" aria-label="מצבי משחק">
+        <button class="ticket" data-act="solo" style="--k:#d1432f">
+          <span class="tk-main"><span class="tk-label">יעד</span><b>מול המחשב</b><small>שלוש רמות קושי</small></span>
+          <span class="tk-stub"><span class="tk-label">שער</span><b>1</b><svg><use href="#i-cpu"/></svg></span>
         </button>
-        <button class="menu-row" data-act="local">
-          <span class="mr-ic"><svg><use href="#i-people"/></svg></span>
-          <span class="mr-txt"><b>כמה שחקנים</b><small>על מכשיר אחד, כל אחד בתורו</small></span>
-          <svg class="mr-go"><use href="#i-go"/></svg>
+        <button class="ticket" data-act="local" style="--k:#e0a526">
+          <span class="tk-main"><span class="tk-label">יעד</span><b>כמה שחקנים</b><small>על מכשיר אחד, כל אחד בתורו</small></span>
+          <span class="tk-stub"><span class="tk-label">שער</span><b>2</b><svg><use href="#i-people"/></svg></span>
         </button>
-        <button class="menu-row" data-act="online">
-          <span class="mr-ic"><svg><use href="#i-globe"/></svg></span>
-          <span class="mr-txt"><b>אונליין</b><small>עם חברים או עם שחקנים אקראיים</small></span>
-          <svg class="mr-go"><use href="#i-go"/></svg>
+        <button class="ticket" data-act="online" style="--k:#1f8a7e">
+          <span class="tk-main"><span class="tk-label">יעד</span><b>אונליין</b><small>עם חברים או עם שחקנים אקראיים</small></span>
+          <span class="tk-stub"><span class="tk-label">שער</span><b>3</b><svg><use href="#i-globe"/></svg></span>
         </button>
       </nav>
 

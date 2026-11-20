@@ -119,9 +119,10 @@ function registerRemoteCats(defs) {
 
 /* ================= constants ================= */
 /* players are shown as a monogram (first letter of the name) on a chosen tone */
+// stamp inks (ids kept stable so saved profiles and online peers stay compatible)
 const TONES = {
-  gold: '#c9a96e', ivory: '#e8dfcf', sage: '#9fb09a', rose: '#c79c98', sky: '#93a8c2',
-  plum: '#a594b4', sand: '#cbb595', slate: '#8f99a4', jade: '#7fa497', rust: '#b88566'
+  gold: '#e0a526', ivory: '#2c5aa0', sage: '#3f8f5a', rose: '#d1432f', sky: '#3a9bc4',
+  plum: '#7a4fa0', sand: '#c4782b', slate: '#4a5568', jade: '#1f8a7e', rust: '#b2456e'
 };
 const AVATARS = Object.keys(TONES);
 const BOT_AVATARS = ['slate', 'jade', 'sky', 'plum', 'sand', 'rust'];
@@ -143,6 +144,15 @@ const ICON_PATHS = {
   job: '<rect x="3.5" y="7.5" width="17" height="12" rx="1.5"/><path d="M9 7.5V5.2c0-.4.3-.7.7-.7h4.6c.4 0 .7.3.7.7v2.3M3.5 12.5h17"/>',
   food: '<path d="M7 3.5v17M4.8 3.5v4.8a2.2 2.2 0 0 0 4.4 0V3.5M17.2 20.5V3.5c-2.4 1.6-3.2 4.6-3.2 8h3.2"/>'
 };
+/* every category gets its own stamp-ink colour */
+const CAT_INK = { country: '#2c5aa0', city: '#7a4fa0', animal: '#d9792b', plant: '#3f8f5a', object: '#b2456e', name: '#d1432f', job: '#1f8a7e', food: '#c8902a' };
+const CUSTOM_INKS = ['#4a5568', '#3a9bc4', '#9c6b2f', '#a03a5a', '#2f7a55', '#6a5acd'];
+function catInk(c) {
+  if (!c) return '#4a5568';
+  if (CAT_INK[c.id]) return CAT_INK[c.id];
+  let h = 0; for (const ch of c.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return CUSTOM_INKS[h % CUSTOM_INKS.length];
+}
 function catIcon(c) {
   if (c && ICON_PATHS[c.id]) return `<svg class="ci" viewBox="0 0 24 24" aria-hidden="true">${ICON_PATHS[c.id]}</svg>`;
   return `<span class="ci mono">${esc(initialOf(c && c.name))}</span>`;
@@ -174,14 +184,23 @@ const Sfx = {
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d);
     o.connect(g).connect(this.ctx.destination); o.start(t); o.stop(t + d + .03);
   },
-  // soft, low-volume sine tones: a bell-like palette rather than arcade beeps
-  click() { this.tone(660, .08, 'sine', .045); },
-  tick() { this.tone(1400, .03, 'sine', .018); },
-  land() { [392, 494, 587, 784].forEach((f, i) => this.tone(f, 1.1, 'sine', .06, i * .06)); },
-  stop() { this.tone(220, .7, 'sine', .09, 0, 165); this.tone(330, .5, 'sine', .04, .03); },
-  warn() { this.tone(988, .12, 'sine', .035); },
-  good() { this.tone(784, .35, 'sine', .05); this.tone(1175, .5, 'sine', .035, .09); },
-  win() { [392, 523, 659, 784, 1046].forEach((f, i) => this.tone(f, 1.4, 'sine', .055, i * .16)); }
+  /** short filtered noise burst: split-flap clack / rubber-stamp thump */
+  noise(d = .04, v = .2, freq = 2500, q = 1, delay = 0) {
+    if (!this.on || !this.ctx) return;
+    const t = this.ctx.currentTime + delay, n = Math.max(1, Math.floor(this.ctx.sampleRate * d));
+    const buf = this.ctx.createBuffer(1, n, this.ctx.sampleRate), ch = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
+    const src = this.ctx.createBufferSource(), f = this.ctx.createBiquadFilter(), g = this.ctx.createGain();
+    src.buffer = buf; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q; g.gain.value = v;
+    src.connect(f).connect(g).connect(this.ctx.destination); src.start(t);
+  },
+  click() { this.tone(520, .07, 'triangle', .07, 0, 760); },
+  tick() { this.noise(.035, .25, 3200, 1.4); },                                  // flap clack
+  land() { this.noise(.05, .35, 1800, 1); [523, 659, 784].forEach((f, i) => this.tone(f, .3, 'triangle', .08, .05 + i * .07)); },
+  stop() { this.noise(.18, .9, 160, .7); this.tone(110, .25, 'sine', .25, 0, 55); },   // stamp thump
+  warn() { this.tone(880, .07, 'triangle', .05); },
+  good() { this.tone(660, .12, 'triangle', .08); this.tone(990, .2, 'triangle', .06, .09); },
+  win() { [523, 659, 784, 1046, 784, 1046, 1318].forEach((f, i) => this.tone(f, .28, 'triangle', .085, i * .12)); }
 };
 
 /* ================= ui helpers ================= */
@@ -288,7 +307,7 @@ function renderSetup() {
   renderPlayers();
   const s = SETUP.settings;
   $('#catChips').innerHTML = allCats().map(c =>
-    `<span class="chip-wrap"><button class="chip ${s.cats.includes(c.id) ? 'on' : ''}" data-cat="${c.id}">${catIcon(c)}${esc(c.name)}</button>${c.custom ? `<button class="chip-x" data-del="${c.id}" aria-label="מחק קטגוריה">×</button>` : ''}</span>`).join('')
+    `<span class="chip-wrap"><button class="chip ${s.cats.includes(c.id) ? 'on' : ''}" style="--c:${catInk(c)}" data-cat="${c.id}">${catIcon(c)}${esc(c.name)}</button>${c.custom ? `<button class="chip-x" data-del="${c.id}" aria-label="מחק קטגוריה">×</button>` : ''}</span>`).join('')
     + '<button class="chip chip-add" id="addCat">+ קטגוריה משלכם</button>';
   $('#catCount').textContent = `${s.cats.length} נבחרו`;
   const online = SETUP.mode === 'online';
@@ -542,6 +561,7 @@ function runSpin(letter, n, total) {
       }
       let l; do { l = pick(LETTERS); } while (l === tile.textContent);
       tile.textContent = l; Sfx.tick(); i++; delay *= 1.085;
+      tile.classList.remove('flip'); void tile.offsetWidth; tile.classList.add('flip');   // split-flap
       setTimeout(step, delay);
     };
     step();
@@ -568,7 +588,7 @@ function startPlay(p) {
   $('#playPlayer').innerHTML = `${avHTML(p, 'xs')}<span>${esc(p.name)}</span>`;
   $('#answers').innerHTML = cats.map((id, i) => {
     const c = getCat(id) || { name: '?', icon: '❔', color: '#999999' };
-    return `<label class="ans"><span class="ans-ic">${catIcon(c)}</span>
+    return `<label class="ans" style="--c:${catInk(c)}"><span class="ans-ic">${catIcon(c)}</span>
       <span class="ans-body"><div class="ans-name">${esc(c.name)}</div>
       <input data-cat="${id}" dir="rtl" lang="he" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
         enterkeyhint="${i < cats.length - 1 ? 'next' : 'done'}" maxlength="28" placeholder="${esc(c.name)} ב־${L}..."></span></label>`;
@@ -673,6 +693,7 @@ function beginGrace(name, self) {
   R.stopping = true;
   Sfx.stop(); vib([120, 60, 120]);
   const st = $('#stamp'); st.classList.remove('go'); void st.offsetWidth; st.classList.add('go');
+  const app = $('#app'); app.classList.remove('shake'); void app.offsetWidth; app.classList.add('shake');
   $('#stopBtn').disabled = true;
   $('#stopBannerTxt').textContent = self ? 'עצרת! השאר משלימים...' : `${name} עצר/ה. השלימו מהר`;
   let left = GRACE; $('#stopCount').textContent = left;
@@ -748,7 +769,7 @@ function nextListCat(timeUp) {
   if (PLAY.ci >= cats.length) return endLists();
   const c = getCat(cats[PLAY.ci]) || { name: '?', icon: '❔', color: '#999999' };
   const box = $('#listCat');
-  box.style.setProperty('--c', c.color);
+  box.style.setProperty('--c', catInk(c));
   box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop');
   $('#listCatIc').innerHTML = catIcon(c);
   $('#listCatName').textContent = `${c.name} ב־${R.letter}`;
@@ -980,7 +1001,7 @@ function renderResults(res, players, std, o) {
         ${why ? `<div class="r-why ${cell.m && cell.ok ? 'ok' : ''}">${why}</div>` : ''}</span>
         <span class="pts k-${cell.ok ? cell.kind : 'zero'}">${cell.pts}</span></div>`;
     }).join('');
-    return `<div class="res-card" style="animation-delay:${ci * 50}ms"><div class="res-h">${catIcon(cat)}<span>${esc(cat.name)}</span></div>${rows}</div>`;
+    return `<div class="res-card" style="--c:${catInk(cat)};animation-delay:${ci * 50}ms"><div class="res-h">${catIcon(cat)}<span>${esc(cat.name)}</span></div>${rows}</div>`;
   }).join('');
   $('#standings').innerHTML = std.map((s, i) => {
     const p = P[s.id] || { name: '?', avatar: 'ivory' };
@@ -1392,7 +1413,7 @@ function renderWait() {
     <div class="p-name-static">${esc(p.name)}${p.id === Net.myId ? ' <small>את/ה</small>' : ''}</div>
     ${p.type === 'bot' ? `<span class="tag">מחשב · ${LEVELS[p.level] ? LEVELS[p.level].name : ''}</span>` : ''}</div>`).join('');
   const s = CL.settings || DEFAULTS;
-  $('#waitCats').innerHTML = (s.cats || []).map(id => { const c = getCat(id); return c ? `<span class="chip on">${catIcon(c)}${esc(c.name)}</span>` : ''; }).join('');
+  $('#waitCats').innerHTML = (s.cats || []).map(id => { const c = getCat(id); return c ? `<span class="chip on" style="--c:${catInk(c)}">${catIcon(c)}${esc(c.name)}</span>` : ''; }).join('');
   $('#waitInfo').textContent = `${s.rounds} סיבובים · ${s.timer ? s.timer + ' שניות לסיבוב' : 'ללא הגבלת זמן'}${s.stopRule ? ' · עם "עצור!"' : ''}`;
 }
 
@@ -1605,24 +1626,21 @@ function releaseWakeLock() { try { wakeLock && wakeLock.release(); } catch (e) {
 function confetti() {
   const cv = $('#confetti'), ctx = cv.getContext('2d');
   const W = cv.width = cv.offsetWidth * devicePixelRatio, H = cv.height = cv.offsetHeight * devicePixelRatio;
-  // slow, sparse gold dust instead of confetti
+  // paper confetti in the stamp-ink palette, fluttering (flip = squash on one axis)
   const dpr = devicePixelRatio || 1;
-  const parts = Array.from({ length: 70 }, () => ({
-    x: Math.random() * W, y: -Math.random() * H, vx: rnd(-.25, .25) * dpr, vy: rnd(.5, 1.4) * dpr,
-    s: rnd(.8, 2.4) * dpr, a: rnd(.35, .9), ph: Math.random() * 6.28
+  const cols = ['#d1432f', '#2c5aa0', '#e0a526', '#1f8a7e', '#f4ecdc', '#7a4fa0'];
+  const parts = Array.from({ length: 130 }, () => ({
+    x: Math.random() * W, y: -Math.random() * H * .7, vx: rnd(-.8, .8) * dpr, vy: rnd(1.4, 3.2) * dpr,
+    w: rnd(7, 13) * dpr, h: rnd(4, 7) * dpr, r: Math.random() * 6.28, vr: rnd(-.08, .08), ph: Math.random() * 6.28, c: pick(cols)
   }));
   const t0 = performance.now();
   (function frame(t) {
     ctx.clearRect(0, 0, W, H);
-    const fade = Math.min(1, (6000 - (t - t0)) / 1500);
     parts.forEach(p => {
-      p.x += p.vx + Math.sin(t / 900 + p.ph) * .2 * dpr; p.y += p.vy;
-      const tw = .55 + .45 * Math.sin(t / 260 + p.ph);
-      ctx.globalAlpha = Math.max(0, p.a * tw * fade);
-      ctx.fillStyle = '#d9bf8a';
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, 6.283); ctx.fill();
+      p.x += p.vx + Math.sin(t / 400 + p.ph) * .6 * dpr; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.scale(Math.cos(t / 180 + p.ph), 1);
+      ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
     });
-    ctx.globalAlpha = 1;
     if (t - t0 < 6000 && current === 'final') requestAnimationFrame(frame); else ctx.clearRect(0, 0, W, H);
   })(t0);
 }

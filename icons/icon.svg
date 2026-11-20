@@ -1,9 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <radialGradient id="g" cx="50%" cy="0%" r="90%"><stop offset="0" stop-color="#3a2f20"/><stop offset="1" stop-color="#100e0b"/></radialGradient>
-  </defs>
-  <rect width="512" height="512" rx="96" fill="url(#g)"/>
-  <path d="M256 102L410 256 256 410 102 256Z" fill="none" stroke="#c9a96e" stroke-width="3.5"/>
-  <path d="M256 124L388 256 256 388 124 256Z" fill="none" stroke="#c9a96e" stroke-opacity=".55" stroke-width="1.8"/>
-  <text x="256" y="300" font-family="'Frank Ruhl Libre','FrankRuehl','David',serif" font-size="170" text-anchor="middle" fill="#e3cc98">א</text>
+  <defs><clipPath id="c"><rect width="512" height="512" rx="96"/></clipPath>
+  <pattern id="am" width="72" height="72" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="18" height="72" fill="#d1432f"/><rect x="18" width="18" height="72" fill="#f6efe0"/><rect x="36" width="18" height="72" fill="#2c5aa0"/><rect x="54" width="18" height="72" fill="#f6efe0"/></pattern></defs>
+  <g clip-path="url(#c)">
+    <rect width="512" height="512" fill="#173540"/>
+    <rect y="446" width="512" height="66" fill="url(#am)"/>
+    <rect x="128" y="136" width="256" height="256" rx="34" fill="#0d131b"/>
+    <rect x="128" y="100" width="256" height="256" rx="34" fill="#2a3646"/>
+    <rect x="128" y="228" width="256" height="128" fill="#222c3a"/>
+    <rect x="128" y="228" width="256" height="20" rx="0" fill="#222c3a"/>
+    <text x="256" y="300" text-anchor="middle" font-family="'Karantina','Aharoni','Arial',sans-serif" font-weight="700" font-size="210" fill="#f6efe0">א</text>
+    <rect x="128" y="225" width="256" height="7" fill="#0d131b"/>
+  </g>
 </svg>
